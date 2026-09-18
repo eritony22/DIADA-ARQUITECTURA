@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense, useState, type FormEvent } from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Lock } from "lucide-react";
+import Logo from "@/components/brand/logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -44,13 +44,7 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-ink px-6">
       <div className="w-full max-w-sm rounded-[28px] border border-bone/10 bg-ink-soft p-9 text-bone">
         <div className="flex items-center gap-3">
-          <Image
-            src="/images/brand/logo.webp"
-            alt="DIADA"
-            width={120}
-            height={52}
-            className="h-9 w-auto rounded bg-bone p-1"
-          />
+          <Logo className="h-9" label="DIADA" />
         </div>
 
         <div className="mt-8 flex items-center gap-2 text-bone/50">

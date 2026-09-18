@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import InstagramIcon from "@/components/icons/instagram-icon";
+import Logo from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 
 const NAV_LINKS = [
@@ -45,6 +45,11 @@ export default function Header() {
     };
   }, [open]);
 
+  // Over the dark hero band every page opens with, or over the full-screen
+  // menu overlay, the mark reads light; once the bone header background is
+  // revealed by scrolling, it switches to ink so it stays legible.
+  const lightMark = open || !scrolled;
+
   return (
     <>
       <header
@@ -58,25 +63,18 @@ export default function Header() {
         <div className="container-diada flex h-20 items-center justify-between md:h-24">
           <Link
             href="/"
-            className="relative z-10 flex items-center gap-3"
+            className={cn(
+              "relative z-10 flex items-center gap-3 transition-colors duration-500",
+              lightMark ? "text-bone" : "text-ink",
+            )}
             aria-label="DIADA Arquitectura y Construcción — Inicio"
           >
             <motion.span
-              className="block h-9 w-auto md:h-11"
+              className="block"
               whileHover={{ rotate: -2, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300, damping: 18 }}
             >
-              <Image
-                src="/images/brand/logo.webp"
-                alt="DIADA Arquitectura y Construcción"
-                width={220}
-                height={95}
-                priority
-                className={cn(
-                  "h-full w-auto object-contain transition-[filter] duration-500",
-                  open && "invert",
-                )}
-              />
+              <Logo className="h-9 md:h-11" />
             </motion.span>
           </Link>
 
@@ -86,8 +84,8 @@ export default function Header() {
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
             className={cn(
-              "relative z-10 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors",
-              open || !scrolled ? "text-bone" : "text-ink",
+              "relative z-10 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors duration-500",
+              lightMark ? "text-bone" : "text-ink",
             )}
           >
             {open ? "Cerrar" : "Menú"}

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -15,6 +14,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import Logo from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 
 const NAV = [
@@ -82,14 +82,8 @@ export default function AdminShell({
     <div className="flex min-h-screen">
       {/* desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-paper p-5 lg:flex">
-        <Link href="/admin" className="mb-8 flex items-center gap-2 px-1">
-          <Image
-            src="/images/brand/logo.webp"
-            alt="DIADA"
-            width={110}
-            height={48}
-            className="h-8 w-auto object-contain"
-          />
+        <Link href="/admin" className="mb-8 flex items-center gap-2 px-1 text-ink">
+          <Logo className="h-8" label="DIADA" />
         </Link>
         {NavLinks}
         <div className="mt-auto flex flex-col gap-2 border-t border-line pt-4">
@@ -115,14 +109,8 @@ export default function AdminShell({
 
       {/* mobile topbar */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-line bg-paper px-5 lg:hidden">
-        <Link href="/admin" className="flex items-center gap-2">
-          <Image
-            src="/images/brand/logo.webp"
-            alt="DIADA"
-            width={100}
-            height={44}
-            className="h-7 w-auto object-contain"
-          />
+        <Link href="/admin" className="flex items-center gap-2 text-ink">
+          <Logo className="h-7" label="DIADA" />
         </Link>
         <button
           type="button"
