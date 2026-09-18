@@ -42,20 +42,24 @@ export default function ProjectFilterGrid({ projects }: { projects: Project[] })
         </div>
       </LayoutGroup>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-12 grid gap-px bg-line sm:grid-cols-2">
         <AnimatePresence mode="popLayout">
-          {filtered.map((project, i) => (
-            <motion.div
-              key={project.id}
-              layout
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.35, delay: i * 0.04 }}
-            >
-              <ProjectCard project={project} priority={i < 3} />
-            </motion.div>
-          ))}
+          {filtered.map((project, i) => {
+            const wide = i % 3 === 0;
+            return (
+              <motion.div
+                key={project.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.35, delay: i * 0.04 }}
+                className={cn("bg-bone", wide && "sm:col-span-2")}
+              >
+                <ProjectCard project={project} priority={i < 3} wide={wide} />
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 

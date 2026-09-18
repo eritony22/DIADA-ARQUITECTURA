@@ -1,14 +1,14 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import Kicker from "@/components/ui/kicker";
 import Reveal from "@/components/ui/reveal";
-import BrandMark from "@/components/brand/brand-mark";
 import type { AboutContent } from "@/types/content";
 
 export default function AboutTeaser({ about }: { about: AboutContent }) {
   return (
     <section className="bg-bone py-24 md:py-32">
-      <div className="container-diada grid gap-12 md:grid-cols-2 md:gap-20">
+      <div className="container-diada grid gap-12 md:grid-cols-2 md:items-center md:gap-20">
         <Reveal>
           <Kicker>{about.kicker}</Kicker>
           <h2 className="mt-5 text-balance font-display text-4xl font-bold leading-[1.05] text-ink md:text-5xl">
@@ -29,9 +29,15 @@ export default function AboutTeaser({ about }: { about: AboutContent }) {
           </Link>
         </Reveal>
 
-        <Reveal delay={0.15} className="relative flex items-center justify-center">
-          <div className="relative aspect-square w-full max-w-sm rounded-[32px] bg-ink p-10 text-clay">
-            <BrandMark className="h-full w-full" />
+        <Reveal delay={0.15} className="relative">
+          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[4px]">
+            <Image
+              src="/images/projects/piscina-campestre/board-02-nocturna.webp"
+              alt="Proyecto DIADA — Piscina Campestre, vista nocturna"
+              fill
+              sizes="(min-width: 768px) 45vw, 92vw"
+              className="object-cover"
+            />
           </div>
         </Reveal>
       </div>

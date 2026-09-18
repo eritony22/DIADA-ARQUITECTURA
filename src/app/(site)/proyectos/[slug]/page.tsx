@@ -125,7 +125,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="rounded-2xl border border-line bg-paper p-8">
+            <div className="rounded-[3px] border border-line bg-paper p-8">
               <p className="kicker text-stone">Ficha técnica</p>
               <dl className="mt-6 space-y-5">
                 {facts.map((fact) => (

@@ -48,7 +48,7 @@ export default function GalleryLightbox({
             key={image.src}
             type="button"
             onClick={() => setIndex(i)}
-            className={`group relative overflow-hidden rounded-2xl bg-ink/5 ${
+            className={`group relative overflow-hidden rounded-[3px] bg-ink/5 ${
               images.length === 1 ? "sm:col-span-2" : ""
             }`}
           >

@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero content={settings.hero} />
+      <Hero content={settings.hero} slides={featuredProjects} />
       <MarqueeStrip />
       <StatsBar stats={settings.stats} />
       <FeaturedProjects projects={featuredProjects} />

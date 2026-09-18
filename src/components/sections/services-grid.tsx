@@ -27,7 +27,7 @@ export default function ServicesGrid({
           </h2>
         </Reveal>
 
-        <div className="mt-16 grid gap-px overflow-hidden rounded-[28px] border border-bone/10 bg-bone/10 sm:grid-cols-2">
+        <div className="mt-16 grid gap-px overflow-hidden rounded-[3px] border border-bone/10 bg-bone/10 sm:grid-cols-2">
           {services.map((service, i) => {
             const Icon = ICONS[service.icon] ?? Compass;
             return (

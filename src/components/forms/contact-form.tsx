@@ -43,7 +43,7 @@ export default function ContactForm() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-start gap-4 rounded-[28px] border border-clay/30 bg-clay/10 p-10"
+        className="flex flex-col items-start gap-4 rounded-[3px] border border-clay/30 bg-clay/10 p-10"
       >
         <CheckCircle2 size={36} className="text-clay" />
         <h3 className="font-display text-2xl font-bold text-ink">

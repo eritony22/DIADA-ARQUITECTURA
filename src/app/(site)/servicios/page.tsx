@@ -74,7 +74,7 @@ export default async function ServiciosPage() {
               <Reveal
                 key={service.id}
                 delay={i * 0.08}
-                className="group rounded-[28px] border border-line bg-paper p-9 transition-colors hover:border-clay"
+                className="group rounded-[3px] border border-line bg-paper p-9 transition-colors hover:border-clay"
               >
                 <div className="flex items-start justify-between">
                   <Icon size={30} strokeWidth={1.5} className="text-clay" />

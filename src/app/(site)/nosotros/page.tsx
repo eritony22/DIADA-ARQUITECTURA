@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Kicker from "@/components/ui/kicker";
 import Reveal from "@/components/ui/reveal";
-import BrandMark from "@/components/brand/brand-mark";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
@@ -39,14 +39,18 @@ export default async function NosotrosPage() {
             ))}
           </Reveal>
 
-          <Reveal delay={0.15} className="text-clay">
-            <div className="aspect-square w-full rounded-[28px] bg-ink p-8">
-              <BrandMark className="h-full w-full" />
-            </div>
+          <Reveal delay={0.15} className="relative aspect-[3/4] w-full overflow-hidden">
+            <Image
+              src="/images/projects/beauty-studio-cafe/board-01.webp"
+              alt="Proyecto DIADA — Beauty Studio &amp; Café"
+              fill
+              sizes="(min-width: 768px) 22vw, 92vw"
+              className="object-cover"
+            />
           </Reveal>
         </div>
 
-        <div className="container-diada mt-16 grid gap-px overflow-hidden rounded-[28px] border border-line bg-line sm:grid-cols-4">
+        <div className="container-diada mt-16 grid gap-px overflow-hidden rounded-[3px] border border-line bg-line sm:grid-cols-4">
           {stats.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 0.06} className="bg-paper p-7">
               <p className="font-display text-3xl font-extrabold text-ink">
@@ -61,13 +65,13 @@ export default async function NosotrosPage() {
 
       <section className="border-y border-line bg-paper py-20 md:py-28">
         <div className="container-diada grid gap-10 md:grid-cols-2">
-          <Reveal className="rounded-[28px] border border-line bg-bone p-10">
+          <Reveal className="rounded-[3px] border border-line bg-bone p-10">
             <Kicker>Misión</Kicker>
             <p className="mt-5 text-balance text-xl font-medium leading-relaxed text-ink">
               {about.mission}
             </p>
           </Reveal>
-          <Reveal delay={0.1} className="rounded-[28px] border border-line bg-bone p-10">
+          <Reveal delay={0.1} className="rounded-[3px] border border-line bg-bone p-10">
             <Kicker>Visión</Kicker>
             <p className="mt-5 text-balance text-xl font-medium leading-relaxed text-ink">
               {about.vision}
@@ -117,7 +121,7 @@ export default async function NosotrosPage() {
               <Reveal
                 key={member.name}
                 delay={i * 0.1}
-                className="rounded-[24px] border border-bone/10 p-8"
+                className="rounded-[3px] border border-bone/10 p-8"
               >
                 <p className="font-display text-2xl font-bold">{member.name}</p>
                 <p className="kicker mt-2 text-clay">{member.role}</p>

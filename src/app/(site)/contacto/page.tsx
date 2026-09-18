@@ -38,7 +38,7 @@ export default async function ContactoPage() {
       <section className="py-16 md:py-24">
         <div className="container-diada grid gap-14 lg:grid-cols-[1fr_1.1fr]">
           <Reveal className="space-y-10">
-            <div className="rounded-[28px] border border-line bg-paper p-8">
+            <div className="rounded-[3px] border border-line bg-paper p-8">
               <p className="kicker text-stone">Información de contacto</p>
               <ul className="mt-6 space-y-5">
                 <li className="flex items-start gap-3">
@@ -95,7 +95,7 @@ export default async function ContactoPage() {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-[28px] border border-line">
+            <div className="overflow-hidden rounded-[3px] border border-line">
               <iframe
                 src={mapSrc}
                 title={`Ubicación de DIADA en ${company.mapQuery}`}
@@ -106,7 +106,7 @@ export default async function ContactoPage() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.1} className="rounded-[28px] border border-line bg-paper p-8 md:p-10">
+          <Reveal delay={0.1} className="rounded-[3px] border border-line bg-paper p-8 md:p-10">
             <p className="kicker text-stone">Formulario</p>
             <h2 className="mt-4 font-display text-2xl font-bold text-ink">
               Escríbenos directamente
