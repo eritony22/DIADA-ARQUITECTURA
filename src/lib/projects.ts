@@ -2,6 +2,7 @@ import "server-only";
 import { sql, ensureSchema } from "./db";
 import { generateId, slugify } from "./slug";
 import type { Project } from "@/types/content";
+import sampleProjects from "../../data/projects.json";
 
 interface ProjectRow {
   id: string;
@@ -216,4 +217,33 @@ export async function reorderProjects(orderedIds: string[]): Promise<Project[]> 
   }
 
   return loadAll();
+}
+
+/**
+ * One-time bootstrap for a freshly-connected database: inserts the sample
+ * projects bundled in the repo (data/projects.json). Safe to call more than
+ * once — existing rows (matched by id) are left untouched.
+ */
+export async function seedSampleProjects(): Promise<number> {
+  await ensureSchema();
+  let inserted = 0;
+  for (const p of sampleProjects as Project[]) {
+    const rows = (await sql`
+      INSERT INTO projects (
+        id, slug, title, category, location, year, area, client, status,
+        summary, description, materials, services, cover_image, gallery,
+        featured, "order", created_at, updated_at
+      ) VALUES (
+        ${p.id}, ${p.slug}, ${p.title}, ${p.category}, ${p.location}, ${p.year},
+        ${p.area ?? null}, ${p.client ?? null}, ${p.status}, ${p.summary},
+        ${JSON.stringify(p.description ?? [])}, ${JSON.stringify(p.materials ?? [])},
+        ${JSON.stringify(p.services ?? [])}, ${p.coverImage}, ${JSON.stringify(p.gallery ?? [])},
+        ${p.featured}, ${p.order}, ${p.createdAt}, ${p.updatedAt}
+      )
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    `) as unknown as { id: string }[];
+    if (rows.length > 0) inserted++;
+  }
+  return inserted;
 }
