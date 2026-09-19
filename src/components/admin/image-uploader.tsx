@@ -43,7 +43,11 @@ export default function ImageUploader({
       const text = await res.text();
       const body = text ? JSON.parse(text) : null;
       if (!res.ok || !body) {
-        throw new Error(body?.error ?? "El servidor no respondió correctamente. Intenta con una imagen más pequeña.");
+        const detail = body?.details?.length ? `: ${body.details.join(" · ")}` : "";
+        throw new Error(
+          (body?.error ?? "El servidor no respondió correctamente. Intenta con una imagen más pequeña.") +
+            detail,
+        );
       }
       onUploaded(body.files as UploadedFile[]);
       if (body.errors?.length) {
