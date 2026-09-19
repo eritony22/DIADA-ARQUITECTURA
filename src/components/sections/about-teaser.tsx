@@ -32,7 +32,7 @@ export default function AboutTeaser({ about }: { about: AboutContent }) {
         <Reveal delay={0.15} className="relative">
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[4px]">
             <Image
-              src="/images/projects/piscina-campestre/board-02-nocturna.webp"
+              src={about.teaserImage || "/images/projects/piscina-campestre/board-02-nocturna.webp"}
               alt="Proyecto DIADA — Piscina Campestre, vista nocturna"
               fill
               sizes="(min-width: 768px) 45vw, 92vw"

@@ -83,6 +83,8 @@ export const settingsPatchSchema = z.object({
           }),
         )
         .optional(),
+      teaserImage: z.string().optional(),
+      pageImage: z.string().optional(),
     })
     .partial()
     .optional(),

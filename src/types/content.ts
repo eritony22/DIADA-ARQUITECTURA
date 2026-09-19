@@ -86,6 +86,10 @@ export interface AboutContent {
   vision: string;
   values: ValueItem[];
   team: TeamMember[];
+  /** Photo next to the "Quiénes somos" teaser on the homepage. */
+  teaserImage?: string;
+  /** Photo next to the story text on the /nosotros page. */
+  pageImage?: string;
 }
 
 export interface SiteSettings {
