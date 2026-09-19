@@ -79,6 +79,11 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
           <Field label="RUC" value={company.ruc} onChange={(v) => setCompany({ ...company, ruc: v })} />
           <Field label="Instagram" value={company.instagram} onChange={(v) => setCompany({ ...company, instagram: v })} />
           <Field
+            label="WhatsApp (código de país + número, sin espacios ni +)"
+            value={company.whatsapp ?? ""}
+            onChange={(v) => setCompany({ ...company, whatsapp: v })}
+          />
+          <Field
             label="Teléfonos (separados por coma)"
             value={company.phones.join(", ")}
             onChange={(v) => setCompany({ ...company, phones: splitList(v) })}

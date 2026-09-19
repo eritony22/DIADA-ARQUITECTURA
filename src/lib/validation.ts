@@ -52,6 +52,7 @@ export const settingsPatchSchema = z.object({
       region: z.string().optional(),
       country: z.string().optional(),
       mapQuery: z.string().optional(),
+      whatsapp: z.string().optional(),
     })
     .partial()
     .optional(),

@@ -69,6 +69,8 @@ export interface CompanyInfo {
   region: string;
   country: string;
   mapQuery: string;
+  /** WhatsApp number in international format, digits only (e.g. "51914457116"). */
+  whatsapp?: string;
 }
 
 export interface HeroContent {

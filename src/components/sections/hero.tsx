@@ -103,20 +103,20 @@ export default function Hero({
             className="mt-10 flex flex-wrap items-center gap-4"
           >
             <Link
-              href="/proyectos"
-              className="group inline-flex items-center gap-2 rounded-full bg-clay px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-clay-light"
+              href="/contacto"
+              className="group inline-flex items-center gap-2 rounded-full bg-clay px-7 py-4 text-sm font-bold text-ink shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-all hover:scale-[1.03] hover:bg-clay-light"
             >
-              Ver proyectos
+              Cotizar proyecto
               <ArrowUpRight
                 size={17}
                 className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               />
             </Link>
             <Link
-              href="/contacto"
+              href="/proyectos"
               className="inline-flex items-center gap-2 rounded-full border border-bone/25 px-6 py-3.5 text-sm font-semibold text-bone transition-colors hover:border-bone hover:bg-bone hover:text-ink"
             >
-              Cotizar proyecto
+              Ver proyectos
             </Link>
           </motion.div>
         </div>
