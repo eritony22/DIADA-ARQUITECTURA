@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Plus, Star } from "lucide-react";
 import { getProjects } from "@/lib/projects";
 import { CATEGORY_LABELS, STATUS_LABELS } from "@/lib/labels";
+import SeedProjectsButton from "@/components/admin/seed-projects-button";
 
 export default async function AdminProjectsPage() {
   const projects = await getProjects();
@@ -25,9 +26,10 @@ export default async function AdminProjectsPage() {
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-paper">
         {projects.length === 0 ? (
-          <p className="p-8 text-center text-stone">
-            Todavía no hay proyectos. Crea el primero.
-          </p>
+          <div className="p-8 text-center text-stone">
+            <p>Todavía no hay proyectos. Crea el primero.</p>
+            <SeedProjectsButton />
+          </div>
         ) : (
           <ul className="divide-y divide-line">
             {projects.map((project) => (
