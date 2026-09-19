@@ -40,9 +40,10 @@ export default function ImageUploader({
         method: "POST",
         body: formData,
       });
-      const body = await res.json();
-      if (!res.ok) {
-        throw new Error(body.error ?? "No se pudo subir el archivo");
+      const text = await res.text();
+      const body = text ? JSON.parse(text) : null;
+      if (!res.ok || !body) {
+        throw new Error(body?.error ?? "El servidor no respondió correctamente. Intenta con una imagen más pequeña.");
       }
       onUploaded(body.files as UploadedFile[]);
       if (body.errors?.length) {
@@ -82,7 +83,7 @@ export default function ImageUploader({
         )}
         <p className="text-sm font-semibold text-ink">{label}</p>
         <p className="text-xs text-stone">
-          Arrastra imágenes aquí o haz clic para elegir (JPG, PNG, WEBP, hasta 20MB)
+          Arrastra imágenes aquí o haz clic para elegir (JPG, PNG, WEBP, hasta 4MB)
         </p>
         <input
           ref={inputRef}
