@@ -11,8 +11,9 @@ tocar código.
 - **Next.js 16** (App Router) + **TypeScript** + **Tailwind CSS v4**
 - **Framer Motion** para las animaciones (logo, transiciones, scroll reveals)
 - Autenticación del panel con **JWT en cookie httpOnly** (`jose` + `bcryptjs`)
-- Contenido persistido en archivos **JSON** (`/data`) y multimedia en
-  **`/public/uploads`** — sin base de datos externa que configurar
+- Contenido persistido en **Postgres** (Neon, vía `@neondatabase/serverless`)
+  y multimedia en **Vercel Blob** (`@vercel/blob`) — listo para desplegar en
+  Vercel sin servidor propio
 - Validación de formularios/API con **zod**
 
 ## Primeros pasos
@@ -26,15 +27,22 @@ npm run dev
 Abre [http://localhost:3000](http://localhost:3000) para el sitio público y
 [http://localhost:3000/admin](http://localhost:3000/admin) para el panel.
 
+Para desarrollo local necesitas una base de datos Postgres y un store de
+Blob a los que apuntar (ver "Despliegue en Vercel" abajo) — la forma más
+simple es crear ambos recursos en el dashboard de Vercel (aunque el proyecto
+todavía no esté desplegado) y copiar sus variables a tu `.env.local`.
+
 ### Variables de entorno
 
 Copia `.env.example` a `.env.local` y define:
 
-| Variable              | Descripción                                                        |
-| ---------------------- | ------------------------------------------------------------------- |
-| `ADMIN_USERNAME`       | Usuario para iniciar sesión en `/admin`.                            |
-| `ADMIN_PASSWORD_HASH`  | Hash bcrypt de la contraseña del panel (ver comando abajo).         |
-| `SESSION_SECRET`       | Cadena aleatoria larga para firmar la cookie de sesión.              |
+| Variable                | Descripción                                                          |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `DATABASE_URL`           | Cadena de conexión a Postgres (proyectos, configuración, mensajes). |
+| `BLOB_READ_WRITE_TOKEN`  | Token del store de Vercel Blob (imágenes subidas desde el panel).   |
+| `ADMIN_USERNAME`         | Usuario para iniciar sesión en `/admin`.                             |
+| `ADMIN_PASSWORD_HASH`    | Hash bcrypt de la contraseña del panel (ver comando abajo).          |
+| `SESSION_SECRET`         | Cadena aleatoria larga para firmar la cookie de sesión.               |
 
 Generar un hash de contraseña nuevo:
 
@@ -74,52 +82,85 @@ Cámbialas antes de desplegar a producción.
   dirección, Instagram), textos de la portada (hero), sección "Quiénes
   somos" (misión, visión, valores, equipo), servicios y estadísticas.
 
-Todo el contenido se guarda en `/data/*.json` y las imágenes subidas en
-`/public/uploads`, y se refleja en el sitio público **al instante** (todas las
+Todo el contenido se guarda en **Postgres** y las imágenes subidas en
+**Vercel Blob**, y se refleja en el sitio público **al instante** (todas las
 páginas se renderizan por solicitud, no hay que reconstruir el sitio para ver
 un cambio).
 
 ## Estructura del proyecto
 
 ```
-data/                    JSON con proyectos, configuración del sitio y mensajes
+data/                    JSON "semilla" (contenido inicial) — solo se usa para
+                          poblar la base de datos la primera vez, ver abajo
 public/images/           Assets de marca y fotos de proyectos "semilla"
-public/uploads/          Archivos subidos desde el panel (no se versiona)
+scripts/                 Script de migración inicial (JSON -> Postgres)
 src/app/(site)/          Páginas públicas (inicio, proyectos, servicios, nosotros, contacto)
 src/app/admin/           Panel de administración (protegido por middleware)
 src/app/api/admin/       Endpoints del panel (proyectos, media, settings, mensajes, auth)
 src/app/api/contact/     Endpoint público del formulario de contacto
 src/components/          Componentes de UI, secciones, marca y panel admin
-src/lib/                 Acceso a datos (JSON), auth, validación, utilidades
+src/lib/                 Acceso a datos (Postgres/Blob), auth, validación, utilidades
 ```
 
-## Despliegue — nota importante sobre persistencia
+## Despliegue en Vercel
 
-Este proyecto **necesita un sistema de archivos persistente y con permisos de
-escritura** en tiempo de ejecución, porque:
+El proyecto está listo para desplegarse en Vercel tal cual — no necesita
+servidor propio ni configuración adicional más allá de conectar dos
+integraciones de almacenamiento desde el dashboard.
 
-1. El panel de administración escribe en `/data/*.json` al guardar cambios.
-2. Las imágenes subidas se guardan en `/public/uploads`.
+1. **Importa el repositorio** en [vercel.com/new](https://vercel.com/new).
+   Vercel detecta que es Next.js automáticamente, no hay que tocar el build
+   command ni el output directory.
 
-Esto funciona muy bien en un **VPS, servidor dedicado o contenedor Docker**
-con `npm run build && npm run start` (o detrás de PM2/nginx), montando
-`/data` y `/public/uploads` en un volumen persistente.
+2. **Conecta una base de datos Postgres** — en el proyecto ya creado en
+   Vercel: pestaña **Storage** → **Create Database** → **Postgres** (corre
+   sobre Neon). Al conectarla, Vercel agrega automáticamente la variable
+   `DATABASE_URL` a las Environment Variables del proyecto.
 
-**No es compatible tal cual con plataformas serverless de solo lectura**
-(por ejemplo, Vercel en su configuración por defecto), ya que ahí el sistema
-de archivos se reinicia en cada despliegue y las funciones no pueden escribir
-de forma persistente. Para desplegar en una plataforma así, habría que migrar
-`src/lib/*.ts` (la capa de datos) a una base de datos (Postgres, SQLite en
-Turso/LiteFS, etc.) y el almacenamiento de imágenes a un servicio como S3 o
-Cloudinary — la interfaz de las funciones (`getProjects`, `createProject`,
-`updateSettings`, etc.) ya está aislada en `src/lib/`, así que ese cambio no
-afecta a las páginas ni al panel.
+3. **Conecta un store de Blob** — misma pestaña **Storage** → **Create
+   Database** → **Blob**. Esto agrega automáticamente `BLOB_READ_WRITE_TOKEN`.
+
+4. **Agrega las variables restantes** en **Settings → Environment
+   Variables**: `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH` y `SESSION_SECRET`
+   (ver la sección de variables de entorno arriba — en el dashboard de
+   Vercel *no* hace falta escapar el `$` del hash bcrypt, ese problema es
+   solo de los archivos `.env` locales).
+
+5. **Redespliega** (Deployments → ⋯ → Redeploy) para que el build recoja las
+   variables recién agregadas.
+
+6. **Carga el contenido inicial** (proyectos de ejemplo, textos, etc.) —
+   las tablas se crean solas en el primer request, pero empiezan vacías.
+   Corre el script de migración apuntando a la base de datos de producción:
+
+   ```bash
+   # Copia la cadena de conexión desde Vercel: Storage -> tu base de datos -> .env.local
+   DATABASE_URL="postgres://...neon.tech/..." npm run db:migrate
+   ```
+
+   Esto solo inserta lo que falte (es seguro correrlo más de una vez) —
+   después de esto, todo el contenido se administra desde `/admin`.
+
+A partir de ahí, cualquier `git push` a la rama conectada dispara un deploy
+nuevo automáticamente, y las ediciones hechas desde `/admin` se guardan en
+Postgres/Blob — sobreviven a cada redeploy sin perderse, a diferencia de un
+filesystem local.
+
+### Alternativa: VPS / servidor propio
+
+El proyecto también corre igual de bien en un VPS, servidor dedicado o
+contenedor Docker con `npm run build && npm run start` (detrás de PM2/nginx,
+por ejemplo) — solo necesita las mismas variables de entorno (`DATABASE_URL`,
+`BLOB_READ_WRITE_TOKEN`, credenciales de admin) apuntando a los mismos
+servicios de Postgres/Blob, o a tu propia base de datos Postgres si prefieres
+no depender de Neon/Vercel.
 
 ## Scripts
 
 ```bash
-npm run dev      # servidor de desarrollo
-npm run build    # build de producción
-npm run start    # servir el build de producción
-npm run lint     # eslint
+npm run dev        # servidor de desarrollo
+npm run build      # build de producción
+npm run start      # servir el build de producción
+npm run lint       # eslint
+npm run db:migrate # copia data/*.json a la base de datos Postgres conectada
 ```

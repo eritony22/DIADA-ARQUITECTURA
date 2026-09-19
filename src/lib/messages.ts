@@ -1,23 +1,46 @@
 import "server-only";
-import { readJson, writeJson } from "./json-store";
-import { MESSAGES_FILE } from "./paths";
+import { sql, ensureSchema } from "./db";
 import { generateId } from "./slug";
 import type { ContactMessage } from "@/types/content";
 
-async function loadAll(): Promise<ContactMessage[]> {
-  const messages = await readJson<ContactMessage[]>(MESSAGES_FILE, []);
-  return [...messages].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+interface MessageRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+function rowToMessage(row: MessageRow): ContactMessage {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone ?? undefined,
+    subject: row.subject ?? undefined,
+    message: row.message,
+    read: row.read,
+    createdAt: new Date(row.created_at).toISOString(),
+  };
 }
 
 export async function getMessages(): Promise<ContactMessage[]> {
-  return loadAll();
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM messages ORDER BY created_at DESC
+  `) as unknown as MessageRow[];
+  return rows.map(rowToMessage);
 }
 
 export async function getUnreadCount(): Promise<number> {
-  const messages = await loadAll();
-  return messages.filter((m) => !m.read).length;
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT COUNT(*)::int AS count FROM messages WHERE read = false
+  `) as unknown as { count: number }[];
+  return rows[0]?.count ?? 0;
 }
 
 export interface MessageInput {
@@ -29,33 +52,34 @@ export interface MessageInput {
 }
 
 export async function addMessage(input: MessageInput): Promise<ContactMessage> {
-  const messages = await loadAll();
-  const message: ContactMessage = {
-    id: generateId("msg"),
-    ...input,
-    read: false,
-    createdAt: new Date().toISOString(),
-  };
-  await writeJson(MESSAGES_FILE, [message, ...messages]);
-  return message;
+  await ensureSchema();
+  const id = generateId("msg");
+  const rows = (await sql`
+    INSERT INTO messages (id, name, email, phone, subject, message, read)
+    VALUES (
+      ${id}, ${input.name}, ${input.email}, ${input.phone ?? null},
+      ${input.subject ?? null}, ${input.message}, false
+    )
+    RETURNING *
+  `) as unknown as MessageRow[];
+  return rowToMessage(rows[0]);
 }
 
 export async function markMessageRead(
   id: string,
   read: boolean,
 ): Promise<boolean> {
-  const messages = await loadAll();
-  const index = messages.findIndex((m) => m.id === id);
-  if (index === -1) return false;
-  messages[index] = { ...messages[index], read };
-  await writeJson(MESSAGES_FILE, messages);
-  return true;
+  await ensureSchema();
+  const rows = (await sql`
+    UPDATE messages SET read = ${read} WHERE id = ${id} RETURNING id
+  `) as unknown as { id: string }[];
+  return rows.length > 0;
 }
 
 export async function deleteMessage(id: string): Promise<boolean> {
-  const messages = await loadAll();
-  const next = messages.filter((m) => m.id !== id);
-  if (next.length === messages.length) return false;
-  await writeJson(MESSAGES_FILE, next);
-  return true;
+  await ensureSchema();
+  const rows = (await sql`
+    DELETE FROM messages WHERE id = ${id} RETURNING id
+  `) as unknown as { id: string }[];
+  return rows.length > 0;
 }
