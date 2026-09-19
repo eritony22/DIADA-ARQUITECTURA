@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
-import { UPLOADS_DIR, UPLOADS_PUBLIC_PREFIX } from "@/lib/paths";
 
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -30,8 +28,6 @@ export async function POST(request: NextRequest) {
 
   const now = new Date();
   const subdir = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const targetDir = path.join(UPLOADS_DIR, subdir);
-  await fs.mkdir(targetDir, { recursive: true });
 
   const uploaded: { url: string; name: string; size: number }[] = [];
   const errors: string[] = [];
@@ -47,12 +43,15 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    const filename = `${randomUUID()}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(path.join(targetDir, filename), buffer);
+    const pathname = `uploads/${subdir}/${randomUUID()}.${ext}`;
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType: file.type,
+      addRandomSuffix: false,
+    });
 
     uploaded.push({
-      url: `${UPLOADS_PUBLIC_PREFIX}/${subdir}/${filename}`,
+      url: blob.url,
       name: file.name,
       size: file.size,
     });

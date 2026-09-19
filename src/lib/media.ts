@@ -1,7 +1,5 @@
 import "server-only";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { UPLOADS_DIR, UPLOADS_PUBLIC_PREFIX } from "./paths";
+import { list, del } from "@vercel/blob";
 
 export interface MediaFile {
   url: string;
@@ -10,59 +8,36 @@ export interface MediaFile {
   modifiedAt: string;
 }
 
-async function walk(dir: string): Promise<string[]> {
-  let entries: import("node:fs").Dirent[];
-  try {
-    entries = await fs.readdir(dir, { withFileTypes: true });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
-
-  const files: string[] = [];
-  for (const entry of entries) {
-    if (entry.name.startsWith(".")) continue;
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await walk(full)));
-    } else {
-      files.push(full);
-    }
-  }
-  return files;
-}
+const UPLOADS_PREFIX = "uploads/";
 
 export async function listMedia(): Promise<MediaFile[]> {
-  const files = await walk(UPLOADS_DIR);
-  const stats = await Promise.all(
-    files.map(async (file) => {
-      const stat = await fs.stat(file);
-      const relative = path.relative(UPLOADS_DIR, file).split(path.sep).join("/");
-      return {
-        url: `${UPLOADS_PUBLIC_PREFIX}/${relative}`,
-        name: path.basename(file),
-        size: stat.size,
-        modifiedAt: stat.mtime.toISOString(),
-      };
-    }),
-  );
-  return stats.sort(
+  const files: MediaFile[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const page = await list({ prefix: UPLOADS_PREFIX, cursor, limit: 1000 });
+    for (const blob of page.blobs) {
+      files.push({
+        url: blob.url,
+        name: blob.pathname.split("/").pop() ?? blob.pathname,
+        size: blob.size,
+        modifiedAt: blob.uploadedAt.toISOString(),
+      });
+    }
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+
+  return files.sort(
     (a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime(),
   );
 }
 
 export async function deleteMediaFile(url: string): Promise<boolean> {
-  if (!url.startsWith(UPLOADS_PUBLIC_PREFIX)) return false;
-  const relative = url.slice(UPLOADS_PUBLIC_PREFIX.length).replace(/^\/+/, "");
-  const normalized = path.normalize(relative);
-  if (normalized.startsWith("..")) return false;
-
-  const fullPath = path.join(UPLOADS_DIR, normalized);
+  if (!url.includes("blob.vercel-storage.com")) return false;
   try {
-    await fs.unlink(fullPath);
+    await del(url);
     return true;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-    throw error;
+  } catch {
+    return false;
   }
 }
