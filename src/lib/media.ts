@@ -1,5 +1,6 @@
 import "server-only";
 import { list, del } from "@vercel/blob";
+import { BLOB_TOKEN } from "./blob-token";
 
 export interface MediaFile {
   url: string;
@@ -15,7 +16,12 @@ export async function listMedia(): Promise<MediaFile[]> {
   let cursor: string | undefined;
 
   do {
-    const page = await list({ prefix: UPLOADS_PREFIX, cursor, limit: 1000 });
+    const page = await list({
+      prefix: UPLOADS_PREFIX,
+      cursor,
+      limit: 1000,
+      token: BLOB_TOKEN,
+    });
     for (const blob of page.blobs) {
       files.push({
         url: blob.url,
@@ -35,7 +41,7 @@ export async function listMedia(): Promise<MediaFile[]> {
 export async function deleteMediaFile(url: string): Promise<boolean> {
   if (!url.includes("blob.vercel-storage.com")) return false;
   try {
-    await del(url);
+    await del(url, { token: BLOB_TOKEN });
     return true;
   } catch {
     return false;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
+import { BLOB_TOKEN } from "@/lib/blob-token";
 
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       access: "public",
       contentType: file.type,
       addRandomSuffix: false,
+      token: BLOB_TOKEN,
     });
 
     uploaded.push({
