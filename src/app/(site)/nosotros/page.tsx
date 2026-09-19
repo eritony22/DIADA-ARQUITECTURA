@@ -41,7 +41,7 @@ export default async function NosotrosPage() {
 
           <Reveal delay={0.15} className="relative aspect-[3/4] w-full overflow-hidden">
             <Image
-              src="/images/projects/beauty-studio-cafe/board-01.webp"
+              src={about.pageImage || "/images/projects/beauty-studio-cafe/board-01.webp"}
               alt="Proyecto DIADA — Beauty Studio &amp; Café"
               fill
               sizes="(min-width: 768px) 22vw, 92vw"

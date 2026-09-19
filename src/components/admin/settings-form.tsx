@@ -2,16 +2,24 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import type { SiteSettings, Service, Stat } from "@/types/content";
+import ImageUploader from "./image-uploader";
 
 const ICON_OPTIONS = ["compass", "hard-hat", "sofa", "clipboard-check"];
+const DEFAULT_TEASER_IMAGE = "/images/projects/piscina-campestre/board-02-nocturna.webp";
+const DEFAULT_PAGE_IMAGE = "/images/projects/beauty-studio-cafe/board-01.webp";
 
 export default function SettingsForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter();
   const [company, setCompany] = useState(settings.company);
   const [hero, setHero] = useState(settings.hero);
-  const [about, setAbout] = useState(settings.about);
+  const [about, setAbout] = useState({
+    ...settings.about,
+    teaserImage: settings.about.teaserImage || DEFAULT_TEASER_IMAGE,
+    pageImage: settings.about.pageImage || DEFAULT_PAGE_IMAGE,
+  });
   const [services, setServices] = useState<Service[]>(settings.services);
   const [stats, setStats] = useState<Stat[]>(settings.stats);
   const [storyText, setStoryText] = useState(settings.about.story.join("\n\n"));
@@ -117,6 +125,18 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
           <div className="grid gap-5 sm:grid-cols-2">
             <TextArea label="Misión" value={about.mission} onChange={(v) => setAbout({ ...about, mission: v })} rows={3} />
             <TextArea label="Visión" value={about.vision} onChange={(v) => setAbout({ ...about, vision: v })} rows={3} />
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <ImageField
+              label="Foto junto a 'Quiénes somos' (portada)"
+              value={about.teaserImage}
+              onUploaded={(url) => setAbout({ ...about, teaserImage: url })}
+            />
+            <ImageField
+              label="Foto en la página /nosotros"
+              value={about.pageImage}
+              onUploaded={(url) => setAbout({ ...about, pageImage: url })}
+            />
           </div>
         </div>
       </section>
@@ -319,6 +339,38 @@ function splitList(value: string): string[] {
 
 function updateAt<T>(list: T[], index: number, value: T, setList: (list: T[]) => void) {
   setList(list.map((item, i) => (i === index ? value : item)));
+}
+
+function ImageField({
+  label,
+  value,
+  onUploaded,
+}: {
+  label: string;
+  value: string;
+  onUploaded: (url: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-stone">
+        {label}
+      </label>
+      <div className="flex flex-col gap-3">
+        {value && (
+          <div className="relative h-40 w-full overflow-hidden rounded-xl border border-line">
+            <Image src={value} alt="" fill className="object-cover" />
+          </div>
+        )}
+        <ImageUploader
+          multiple={false}
+          label="Reemplazar imagen"
+          onUploaded={(files) => {
+            if (files[0]) onUploaded(files[0].url);
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 function Field({
