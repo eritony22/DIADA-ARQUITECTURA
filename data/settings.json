@@ -1,0 +1,116 @@
+{
+  "company": {
+    "legalName": "DIADA Arquitectura y Construcción S.A.C.",
+    "tradeName": "DIADA",
+    "ruc": "20614485150",
+    "phones": [
+      "914 457 116",
+      "962 377 887"
+    ],
+    "emails": [
+      "andreagarciavasquez@gmail.com",
+      "sedorezgui@gmail.com"
+    ],
+    "instagram": "@diada_arq",
+    "address": "Jr. Leoncio Prado 463",
+    "city": "Tarapoto",
+    "region": "San Martín",
+    "country": "Perú",
+    "mapQuery": "Jr. Leoncio Prado 463, Tarapoto, San Martín, Perú"
+  },
+  "hero": {
+    "kicker": "Arquitectura & Construcción — Tarapoto, San Martín",
+    "title": "Diseñamos la geometría",
+    "highlight": "del paisaje amazónico",
+    "subtitle": "Estudio de arquitectura y construcción que proyecta espacios contemporáneos, técnicos y sensibles al entorno de la selva peruana — desde el trazo inicial hasta la última capa de acabado."
+  },
+  "about": {
+    "kicker": "Quiénes somos",
+    "intro": "DIADA Arquitectura y Construcción S.A.C. es un estudio con sede en Tarapoto que integra arquitectura, ingeniería y construcción bajo una misma visión: proyectar espacios con identidad propia, coherentes con el clima, los materiales y el paisaje de San Martín.",
+    "story": [
+      "Nacimos en 2025 como una sociedad entre arquitectura y gestión de obra, con la convicción de que el diseño y la construcción no deberían caminar por separado. Cada proyecto que firmamos lo acompañamos desde el primer boceto hasta la entrega de llaves.",
+      "Trabajamos vivienda, arquitectura comercial, piscinas y diseño de interiores, siempre partiendo del mismo método: leer el lugar, entender a quién habitará el espacio y traducir ambas cosas en una geometría precisa, construible y con carácter."
+    ],
+    "mission": "Proyectar y construir espacios funcionales, técnicamente sólidos y estéticamente contemporáneos, acompañando a nuestros clientes en cada etapa del proceso constructivo.",
+    "vision": "Consolidarnos como el estudio de arquitectura y construcción de referencia en la región San Martín, expandiendo nuestra huella hacia proyectos de mayor escala en la Amazonía peruana.",
+    "values": [
+      {
+        "title": "Identidad de lugar",
+        "description": "Cada diseño responde al clima, la luz y los materiales de la selva alta — nunca un proyecto genérico trasplantado al entorno."
+      },
+      {
+        "title": "Precisión técnica",
+        "description": "Del plano a la obra sin pérdidas: cortes, detalles constructivos y especificaciones pensadas para ejecutarse tal como se diseñan."
+      },
+      {
+        "title": "Acompañamiento integral",
+        "description": "Un mismo equipo para el diseño, el expediente técnico y la construcción, con seguimiento directo del cliente en cada fase."
+      },
+      {
+        "title": "Sensibilidad espacial",
+        "description": "Espacios pensados para el bienestar de quien los habita, con materialidad cálida y atención al detalle en cada ambiente."
+      }
+    ],
+    "team": [
+      {
+        "name": "Andrea García Vásquez",
+        "role": "Gerente General",
+        "bio": "Arquitecta y fundadora, lidera la dirección de diseño y la gestión integral de los proyectos de DIADA, desde el concepto hasta la entrega de obra."
+      },
+      {
+        "name": "Erick Paredes Grandez",
+        "role": "Socio",
+        "bio": "A cargo de la gestión técnica y de obra, articula la ejecución constructiva con los estándares de calidad definidos en cada proyecto."
+      }
+    ]
+  },
+  "services": [
+    {
+      "id": "arquitectura",
+      "title": "Diseño Arquitectónico",
+      "description": "Anteproyectos, proyectos definitivos y expedientes técnicos para vivienda, arquitectura comercial e institucional, con visualización 3D del proyecto terminado.",
+      "icon": "compass"
+    },
+    {
+      "id": "construccion",
+      "title": "Construcción de Edificios",
+      "description": "Ejecución de obra civil y edificación con gestión propia de campo, control de calidad y cronograma, del casco a los acabados finales.",
+      "icon": "hard-hat"
+    },
+    {
+      "id": "interiorismo",
+      "title": "Diseño de Interiores",
+      "description": "Conceptualización de ambientes, moodboards, selección de mobiliario, iluminación y materiales para espacios residenciales y comerciales.",
+      "icon": "sofa"
+    },
+    {
+      "id": "consultoria",
+      "title": "Consultoría Técnica",
+      "description": "Asesoría en factibilidad, normativa y planificación de proyectos de arquitectura e ingeniería, acompañando decisiones desde la etapa inicial.",
+      "icon": "clipboard-check"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Proyectos en desarrollo",
+      "value": "10",
+      "suffix": "+"
+    },
+    {
+      "label": "m² proyectados",
+      "value": "3500",
+      "suffix": "+"
+    },
+    {
+      "label": "Año de fundación",
+      "value": "2025",
+      "suffix": ""
+    },
+    {
+      "label": "Disciplinas integradas",
+      "value": "4",
+      "suffix": ""
+    }
+  ],
+  "updatedAt": "2026-09-18T22:42:43.726Z"
+}

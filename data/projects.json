@@ -1,0 +1,122 @@
+[
+  {
+    "id": "prj-piscina-campestre",
+    "slug": "piscina-campestre-juan-guerra",
+    "title": "Piscina Campestre",
+    "category": "arquitectura",
+    "location": "Distrito de Juan Guerra, Región San Martín",
+    "year": "2025",
+    "area": "80 m² de espejo de agua",
+    "client": "Proyecto privado",
+    "status": "proyecto",
+    "summary": "Piscina campestre de 80 m² con zonas de esparcimiento, bar y diversión nocturna para el disfrute familiar.",
+    "description": [
+      "Diseñamos una piscina campestre de 80 m² pensada como el centro social de una propiedad familiar en Juan Guerra. El proyecto organiza en un solo recorrido las áreas de espejo de agua, camastros, mesas bajo sombra y una pequeña barra de bar, integradas con vegetación tropical y una cortina de agua como remate visual.",
+      "El planteamiento resuelve el uso diurno y nocturno del espacio: de día, la piscina y las zonas de camastros reciben luz filtrada por las palmeras; de noche, iluminación indirecta en piso y muros, más juegos de agua, transforman el mismo recorrido en un espacio de reunión y esparcimiento.",
+      "La materialidad combina piedra local, madera y concreto expuesto, con estructuras de acero en las áreas techadas — una paleta pensada para resistir el clima de la selva alta y envejecer con carácter."
+    ],
+    "materials": [
+      "Madera",
+      "Concreto",
+      "Acero",
+      "Piedra"
+    ],
+    "services": [
+      "Diseño arquitectónico",
+      "Paisajismo",
+      "Planos técnicos y cortes constructivos"
+    ],
+    "coverImage": "/images/projects/piscina-campestre/board-02-nocturna.webp",
+    "gallery": [
+      {
+        "src": "/images/projects/piscina-campestre/board-01.webp",
+        "caption": "Planta general, cortes A-A / B-B / C-C y vistas del proyecto"
+      },
+      {
+        "src": "/images/projects/piscina-campestre/board-02-nocturna.webp",
+        "caption": "Vista nocturna — zona de camastros, cortina de agua y área social"
+      }
+    ],
+    "featured": true,
+    "order": 1,
+    "createdAt": "2025-08-01T00:00:00.000Z",
+    "updatedAt": "2025-09-18T00:00:00.000Z"
+  },
+  {
+    "id": "prj-beauty-studio-cafe",
+    "slug": "beauty-studio-cafe-abeu",
+    "title": "Beauty Studio & Café",
+    "category": "interiorismo",
+    "location": "Tarapoto, San Martín",
+    "year": "2025",
+    "area": "Local comercial",
+    "client": "Abeu",
+    "status": "proyecto",
+    "summary": "Interiorismo comercial para un estudio de belleza y cafetería, con paleta cálida en verde salvia, madera y terracota.",
+    "description": [
+      "Abeu combina dos programas en un mismo local: un beauty studio y una cafetería de especialidad. El reto fue diseñar un recorrido único donde ambos usos convivan sin perder identidad propia, resuelto con un mismo lenguaje material — madera clara, arcos, iluminación cálida en línea continua y vegetación colgante.",
+      "La barra de café y la vitrina de repostería reciben a los visitantes desde el ingreso, mientras que las estaciones de manicura y el área de despacho se organizan hacia el interior, con mobiliario curvo en tonos verde salvia y terracota que suaviza la geometría del local.",
+      "En fachada, un espejo de agua y vegetación perimetral marcan el ingreso y filtran el ruido de la calle, anticipando el carácter sereno del espacio interior."
+    ],
+    "materials": [
+      "Madera clara",
+      "Microcemento",
+      "Metal latonado",
+      "Vegetación"
+    ],
+    "services": [
+      "Diseño de interiores",
+      "Selección de mobiliario",
+      "Diseño de iluminación"
+    ],
+    "coverImage": "/images/projects/beauty-studio-cafe/board-01.webp",
+    "gallery": [
+      {
+        "src": "/images/projects/beauty-studio-cafe/board-01.webp",
+        "caption": "Vistas interiores: recepción-café, barra y área de manicura"
+      }
+    ],
+    "featured": true,
+    "order": 2,
+    "createdAt": "2025-08-10T00:00:00.000Z",
+    "updatedAt": "2025-09-18T00:00:00.000Z"
+  },
+  {
+    "id": "prj-concepto-spa-relajacion",
+    "slug": "concepto-interior-espacios-de-relajacion",
+    "title": "Espacios de Relajación",
+    "category": "interiorismo",
+    "location": "San Martín",
+    "year": "2025",
+    "area": "Concepto de diseño",
+    "client": "Proyecto de estudio",
+    "status": "concepto",
+    "summary": "Concepto de diseño interior en colores neutros y materiales naturales para espacios de bienestar y desconexión.",
+    "description": [
+      "Un moodboard de diseño interior desarrollado para ambientes de relajación: colores neutros, decoración sutil y presencia constante de naturaleza en el entorno, con el objetivo de transmitir calma desde los materiales y la luz.",
+      "La propuesta combina mobiliario de líneas orgánicas — como el sofá curvo en tono verde oliva — con textiles en terracota, maderas de tono cálido, piedra y concreto pulido, además de lámparas colgantes en latón que aportan un punto cálido de luz directa.",
+      "Este tablero de concepto sirve como punto de partida material y cromático para proyectos de interiorismo enfocados en bienestar: spas, salas de estar y espacios de descanso."
+    ],
+    "materials": [
+      "Madera",
+      "Piedra natural",
+      "Textiles en terracota",
+      "Latón"
+    ],
+    "services": [
+      "Concepto de diseño interior",
+      "Moodboard y paleta de materiales"
+    ],
+    "coverImage": "/images/projects/diseno-interior/board-01.webp",
+    "gallery": [
+      {
+        "src": "/images/projects/diseno-interior/board-01.webp",
+        "caption": "Concepto, mobiliario y paleta de materiales"
+      }
+    ],
+    "featured": true,
+    "order": 3,
+    "createdAt": "2025-08-15T00:00:00.000Z",
+    "updatedAt": "2025-09-18T00:00:00.000Z"
+  }
+]
