@@ -57,6 +57,11 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/sorteo" className="text-bone/75 hover:text-clay">
+                  Sorteo
+                </Link>
+              </li>
+              <li>
                 <Link href="/contacto" className="text-bone/75 hover:text-clay">
                   Contacto
                 </Link>

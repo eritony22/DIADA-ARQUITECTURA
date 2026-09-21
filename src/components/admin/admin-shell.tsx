@@ -12,6 +12,7 @@ import {
   LogOut,
   ExternalLink,
   Menu,
+  Ticket,
   X,
 } from "lucide-react";
 import Logo from "@/components/brand/logo";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/cn";
 const NAV = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
   { href: "/admin/proyectos", label: "Proyectos", icon: Building2 },
+  { href: "/admin/sorteo", label: "Sorteo", icon: Ticket },
   { href: "/admin/media", label: "Media", icon: Images },
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },

@@ -89,6 +89,36 @@ export function ensureSchema(): Promise<void> {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS raffle_config (
+          id INTEGER PRIMARY KEY DEFAULT 1,
+          title TEXT NOT NULL,
+          subtitle TEXT,
+          description TEXT NOT NULL DEFAULT '',
+          rules JSONB NOT NULL DEFAULT '[]',
+          prizes JSONB NOT NULL DEFAULT '[]',
+          media JSONB NOT NULL DEFAULT '[]',
+          total_tickets INTEGER NOT NULL DEFAULT 100,
+          ticket_price NUMERIC NOT NULL DEFAULT 0,
+          currency TEXT NOT NULL DEFAULT 'PEN',
+          whatsapp TEXT,
+          draw_date TEXT,
+          status TEXT NOT NULL DEFAULT 'borrador',
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          CONSTRAINT raffle_config_singleton CHECK (id = 1)
+        )
+      `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS raffle_tickets (
+          number INTEGER PRIMARY KEY,
+          status TEXT NOT NULL DEFAULT 'disponible',
+          buyer_name TEXT,
+          buyer_phone TEXT,
+          buyer_email TEXT,
+          note TEXT,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
     })();
   }
   return schemaReady;

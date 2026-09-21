@@ -81,6 +81,14 @@ Cámbialas antes de desplegar a producción.
 - **Configuración** — datos de la empresa (RUC, teléfonos, correos,
   dirección, Instagram), textos de la portada (hero), sección "Quiénes
   somos" (misión, visión, valores, equipo), servicios y estadísticas.
+- **Sorteo** (`/admin/sorteo`) — herramienta de sorteo de tickets numerados
+  (1 a 1000, configurable). Permite definir título, temática, imágenes/video
+  del premio, premios, reglas, precio por ticket y WhatsApp de contacto, y
+  administrar el tablero marcando cada ticket como disponible, reservado o
+  vendido (con datos del comprador). La página pública `/sorteo` muestra el
+  tablero interactivo: el cliente elige uno o más números disponibles,
+  llena un formulario de compra y se le redirige a WhatsApp con un mensaje
+  prellenado para coordinar el pago con el administrador.
 
 Todo el contenido se guarda en **Postgres** y las imágenes subidas en
 **Vercel Blob**, y se refleja en el sitio público **al instante** (todas las

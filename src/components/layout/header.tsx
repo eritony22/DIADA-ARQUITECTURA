@@ -13,8 +13,9 @@ const NAV_LINKS = [
   { href: "/", label: "Inicio", index: "01" },
   { href: "/proyectos", label: "Proyectos", index: "02" },
   { href: "/servicios", label: "Servicios", index: "03" },
-  { href: "/nosotros", label: "Nosotros", index: "04" },
-  { href: "/contacto", label: "Contacto", index: "05" },
+  { href: "/sorteo", label: "Sorteo", index: "04" },
+  { href: "/nosotros", label: "Nosotros", index: "05" },
+  { href: "/contacto", label: "Contacto", index: "06" },
 ];
 
 export default function Header() {

@@ -113,3 +113,52 @@ export interface ContactMessage {
   read: boolean;
   createdAt: string;
 }
+
+export type TicketStatus = "disponible" | "reservado" | "vendido";
+
+export type RaffleStatus = "borrador" | "activo" | "cerrado";
+
+export interface RaffleMediaItem {
+  url: string;
+  type: "image" | "video";
+  caption?: string;
+}
+
+export interface RafflePrize {
+  title: string;
+  description?: string;
+  image?: string;
+}
+
+export interface RaffleConfig {
+  title: string;
+  subtitle?: string;
+  description: string;
+  rules: string[];
+  prizes: RafflePrize[];
+  media: RaffleMediaItem[];
+  totalTickets: number;
+  ticketPrice: number;
+  currency: string;
+  /** WhatsApp number in international format, digits only. Falls back to the company's number when empty. */
+  whatsapp?: string;
+  drawDate?: string;
+  status: RaffleStatus;
+  updatedAt: string;
+}
+
+export interface RaffleTicket {
+  number: number;
+  status: TicketStatus;
+  buyerName?: string;
+  buyerPhone?: string;
+  buyerEmail?: string;
+  note?: string;
+  updatedAt: string;
+}
+
+/** Ticket shape exposed on the public site — no buyer contact details. */
+export interface PublicRaffleTicket {
+  number: number;
+  status: TicketStatus;
+}
