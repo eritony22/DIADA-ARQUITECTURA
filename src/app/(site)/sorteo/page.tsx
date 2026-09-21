@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Kicker from "@/components/ui/kicker";
 import Reveal from "@/components/ui/reveal";
+import Countdown from "@/components/raffle/countdown";
 import RaffleClient from "@/components/raffle/raffle-client";
 import { getPublicTickets, getRaffleConfig } from "@/lib/raffle";
 import { getSettings } from "@/lib/settings";
@@ -35,6 +36,7 @@ export default async function SorteoPage() {
                 {config.description}
               </p>
             )}
+            {config.drawDate && <Countdown date={config.drawDate} />}
           </Reveal>
         </div>
       </section>
@@ -100,9 +102,6 @@ export default async function SorteoPage() {
       <section className="border-t border-line py-16">
         <div className="container-diada">
           <Kicker>Elige tu número</Kicker>
-          {config.drawDate && (
-            <p className="mt-2 text-sm text-stone">Fecha del sorteo: {config.drawDate}</p>
-          )}
           <div className="mt-6">
             <RaffleClient
               config={config}

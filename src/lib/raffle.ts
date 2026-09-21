@@ -218,6 +218,32 @@ export async function setTicketStatus(
   return rows[0] ? rowToTicket(rows[0]) : null;
 }
 
+/**
+ * Admin bulk action: applies the same status (and buyer info, when set) to
+ * every ticket in `numbers`, regardless of their current status — unlike
+ * `reserveTickets`, this is an administrator override, not a public claim,
+ * so it isn't restricted to tickets that are currently "disponible".
+ */
+export async function setTicketsStatus(
+  numbers: number[],
+  input: TicketUpdateInput,
+): Promise<RaffleTicket[]> {
+  await ensureSchema();
+  const clearBuyer = input.status === "disponible";
+  const rows = (await sql`
+    UPDATE raffle_tickets SET
+      status = ${input.status},
+      buyer_name = ${clearBuyer ? null : input.buyerName || null},
+      buyer_phone = ${clearBuyer ? null : input.buyerPhone || null},
+      buyer_email = ${clearBuyer ? null : input.buyerEmail || null},
+      note = ${clearBuyer ? null : input.note || null},
+      updated_at = now()
+    WHERE number = ANY(${numbers}::int[])
+    RETURNING *
+  `) as unknown as TicketRow[];
+  return rows.map(rowToTicket);
+}
+
 export interface ReserveBuyer {
   name: string;
   phone: string;

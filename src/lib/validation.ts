@@ -154,6 +154,15 @@ export const adminTicketUpdateSchema = z.object({
   note: z.string().optional(),
 });
 
+export const adminTicketBulkUpdateSchema = z.object({
+  numbers: z.array(z.number().int().min(1)).min(1, "Selecciona al menos un ticket"),
+  status: ticketStatusSchema,
+  buyerName: z.string().optional(),
+  buyerPhone: z.string().optional(),
+  buyerEmail: z.string().optional(),
+  note: z.string().optional(),
+});
+
 export const raffleReserveSchema = z.object({
   numbers: z
     .array(z.number().int().min(1))

@@ -62,6 +62,12 @@ export default function RaffleAdmin({
                 items.map((t) => (t.number === ticket.number ? ticket : t)),
               )
             }
+            onTicketsUpdated={(updated) =>
+              setTickets((items) => {
+                const byNumber = new Map(updated.map((t) => [t.number, t]));
+                return items.map((t) => byNumber.get(t.number) ?? t);
+              })
+            }
           />
         )}
       </div>
