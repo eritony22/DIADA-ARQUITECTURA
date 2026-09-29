@@ -1,0 +1,167 @@
+import { z } from "zod";
+
+const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida (AAAA-MM-DD)");
+const monto = z.number().finite();
+const porcentaje = z.number().min(0).max(100);
+
+const movimiento = z.object({
+  id: z.string().min(1),
+  descripcion: z.string(),
+  fecha,
+  monto,
+});
+
+export const obraStateSchema = z.object({
+  id: z.string().min(1),
+  version: z.number().int().nonnegative(),
+  updatedAt: z.string(),
+  config: z.object({
+    nombre: z.string().min(1),
+    programa: z.string(),
+    modalidad: z.string(),
+    convocatoria: z.string(),
+    distrito: z.string(),
+    provincia: z.string(),
+    departamento: z.string(),
+    areaModuloM2: z.number().positive(),
+    valorBfh: monto.nonnegative(),
+    ahorroFamilia: monto.nonnegative(),
+    coberturaGarantia: z.number().min(0).max(3),
+    fechaInicio: fecha,
+    plazoModuloDias: z.number().int().positive(),
+    desfaseGrupoDias: z.number().int().nonnegative(),
+    plazoTotalDias: z.number().int().positive(),
+    umbralSpiAlerta: z.number().min(0).max(2),
+    umbralSpiCritico: z.number().min(0).max(2),
+    diasAvisoFianza: z.number().int().nonnegative(),
+  }),
+  entidades: z.array(
+    z.object({
+      id: z.string().min(1),
+      sigla: z.string().min(1),
+      razonSocial: z.string(),
+      ruc: z.string().optional(),
+      representante: z.string().optional(),
+      telefono: z.string().optional(),
+    }),
+  ),
+  partidas: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        codigo: z.string(),
+        grupo: z.string(),
+        nombre: z.string().min(1),
+        peso: z.number().min(0).max(1),
+        inicioDia: z.number().int().nonnegative(),
+        duracionDias: z.number().int().nonnegative(),
+        predecesoras: z.array(z.string()),
+      }),
+    )
+    .refine(
+      (ps) => Math.abs(ps.reduce((s, p) => s + p.peso, 0) - 1) < 0.0005,
+      "Los pesos de las partidas deben sumar 100 %",
+    ),
+  beneficiarios: z.array(
+    z.object({
+      id: z.string().min(1),
+      n: z.number(),
+      tipoDoc: z.string(),
+      numDoc: z.string(),
+      apPaterno: z.string(),
+      apMaterno: z.string(),
+      nombres: z.string(),
+      departamento: z.string(),
+      provincia: z.string(),
+      distrito: z.string(),
+      direccion: z.string(),
+      grupo: z.number().int().positive(),
+      entidadId: z.string(),
+      lat: z.number().nullable(),
+      lng: z.number().nullable(),
+      estadoPredio: z.enum(["vacio", "demolicion_total", "demolicion_parcial"]).nullable(),
+      predioConfirmado: z.boolean().nullable(),
+      etapa: z.enum([
+        "asignado",
+        "contrato",
+        "garantia",
+        "desembolso",
+        "ejecucion",
+        "verificacion",
+        "entregado",
+      ]),
+      fechaInicio: fecha.optional(),
+      telefono: z.string().optional(),
+      observaciones: z.string().optional(),
+    }),
+  ),
+  contratos: z.array(
+    z.object({
+      id: z.string().min(1),
+      subcontratista: z.string(),
+      entidadId: z.string(),
+      beneficiarioIds: z.array(z.string()),
+      costoUnitario: monto.nonnegative(),
+      fechaInicio: fecha,
+      plazoDias: z.number().int().positive(),
+      adicionales: z.array(movimiento),
+      adelantos: z.array(
+        movimiento.extend({
+          tipo: z.enum(["materiales", "efectivo"]),
+          amortizaciones: z.record(z.string(), monto),
+        }),
+      ),
+    }),
+  ),
+  valorizaciones: z.array(
+    z.object({
+      id: z.string().min(1),
+      numero: z.number().int().positive(),
+      contratoId: z.string(),
+      fechaCorte: fecha,
+      estado: z.enum(["borrador", "aprobada", "pagada"]),
+      avances: z.record(z.string(), z.record(z.string(), porcentaje)),
+      observaciones: z.string().optional(),
+      demo: z.boolean().optional(),
+    }),
+  ),
+  fianzas: z.array(
+    z.object({
+      id: z.string().min(1),
+      numero: z.string(),
+      entidadId: z.string(),
+      emisor: z.string(),
+      tipo: z.enum(["fiel_cumplimiento", "adelanto", "bfh", "otra"]),
+      monto: monto.nonnegative(),
+      fechaEmision: fecha,
+      fechaVencimiento: fecha,
+      beneficiarioIds: z.array(z.string()),
+      estado: z.enum(["vigente", "renovada", "liberada", "ejecutada"]),
+      observaciones: z.string().optional(),
+    }),
+  ),
+  acciones: z.array(
+    z.object({
+      id: z.string().min(1),
+      creada: fecha,
+      alertaClave: z.string().optional(),
+      problema: z.string(),
+      categoria: z.enum([
+        "mano_obra",
+        "materiales",
+        "metodo",
+        "maquinaria",
+        "medio_ambiente",
+        "medicion",
+        "gestion",
+      ]),
+      causaRaiz: z.string(),
+      accion: z.string(),
+      responsable: z.string(),
+      fechaCompromiso: fecha,
+      estado: z.enum(["plan", "hacer", "verificar", "actuar", "cerrada"]),
+      beneficiarioIds: z.array(z.string()),
+      resultado: z.string().optional(),
+    }),
+  ),
+});
