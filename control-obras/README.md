@@ -16,6 +16,8 @@ con su propio inicio de sesión.
 | Beneficiarios | Padrón, etapa Techo Propio, condición del predio, semáforo y término proyectado; ficha por módulo. |
 | Cronograma | Gantt por módulo y cronograma tipo por partida. |
 | **Valorización semanal** | Valorizar la obra por avance cada semana (corte configurable, sábado por defecto), registrar la semana como **avance real** con fecha y hora, y generar el **reporte de pago semanal** al subcontratista (PDF e Excel con el formato del cuadro de valorización). |
+| **Maestros y pagos** | Registro de maestros de obra (DNI, teléfono, cuenta, pago por módulo), asignación de módulos, pagos realizados (fecha, monto, medio, N° de operación) con saldo por maestro, pagos a cuenta y **planilla semanal consolidada** para firma (PDF / Excel). |
+| **Materiales** | Almacén por entidad técnica y stock por módulo: ingresos de compras, entregas (a uno o varios módulos), devoluciones, traslados y mermas, cada una con N° de documento y **nota imprimible**. Matriz de qué materiales tiene cada módulo, kardex, catálogo con requerido por módulo y consumo estimado con el avance real. |
 | Fianzas | Cartas fianza, vencimientos y cobertura por entidad técnica. |
 | Diagnóstico y acciones | Alertas automáticas con acciones correctivas sugeridas, Pareto 6M y tablero PDCA. |
 | Estadística y proyección | Descriptivos, dispersión, distribución, regresión y flujo de pagos proyectado. |
@@ -38,6 +40,31 @@ con su propio inicio de sesión.
    *Descargar Excel* (con fórmulas, como el cuadro original).
 7. Al pagar, **Marcar pagada** con la fecha de pago. Una semana registrada y no
    pagada se puede reabrir indicando el motivo; todo queda en la bitácora.
+
+### Pagos a maestros de obra
+
+- Cada maestro es un contrato a destajo por módulo. Si un módulo cambia de
+  maestro, lo ya valorizado no se vuelve a pagar: el nuevo maestro solo cobra
+  el avance posterior. Las semanas ya registradas conservan sus módulos.
+- En la semana registrada se usa **Registrar pago**. Cuando los pagos cubren el
+  neto, la semana pasa a *Pagada*. Un pago se puede anular y queda en la
+  bitácora.
+- Alertas: pagos pendientes a más de 7 días del corte, pagos mayores al neto
+  y módulos sin maestro.
+
+### Materiales
+
+- Stock del almacén = ingresos − entregas + devoluciones − mermas en almacén.
+- Stock del módulo = entregas + traslados recibidos − devoluciones − traslados
+  enviados − mermas en el módulo.
+- Si se completa el **requerido por módulo** (metrado del expediente) y la
+  partida que lo consume, se estima el consumo con el avance registrado. Así
+  se obtiene lo que queda en obra, lo que falta entregar, los faltantes y los
+  sobrantes al concluir.
+- El catálogo inicial trae nombres y unidades típicas de un módulo, **sin
+  cantidades**: complétalas con tu metrado.
+- Alertas: módulos por iniciar o en ejecución sin materiales, stock negativo en
+  almacén, consumo mayor a lo entregado y sobrantes en módulos concluidos.
 
 ## Desarrollo local
 
@@ -89,7 +116,9 @@ datos. Los respaldos JSON descargados sí contienen datos personales.
 ```
 src/lib/obras/calc.ts          fórmulas: avance, curva S, SPI, semanas, valorización
 src/lib/obras/diagnostico.ts   reglas de alertas y acciones correctivas
-src/lib/obras/ops.ts           importar, abrir/registrar/reabrir/pagar semana, demo
+src/lib/obras/ops.ts           importar, semanas, maestros, pagos, movimientos de materiales, demo
+src/lib/obras/pagos.ts         valorizado vs. pagado por maestro, planilla semanal
+src/lib/obras/materiales.ts    stock por almacén y módulo, consumo estimado, kardex
 src/lib/obras/reporte.ts       datos del reporte de pago + monto en letras
 src/lib/obras/reporte-excel.ts exportación .xlsx (exceljs)
 src/components/obras/          tablero (pestañas, gráficos, reporte)

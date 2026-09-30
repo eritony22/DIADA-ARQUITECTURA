@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   CloudOff,
   FileSpreadsheet,
+  HardHat,
+  Package,
   LayoutDashboard,
   Loader2,
   LogOut,
@@ -27,6 +29,8 @@ import TabResumen from "./tab-resumen";
 import TabBeneficiarios from "./tab-beneficiarios";
 import TabCronograma from "./tab-cronograma";
 import TabSemanal from "./tab-semanal";
+import TabMaestros from "./tab-maestros";
+import TabMateriales from "./tab-materiales";
 import TabFianzas from "./tab-fianzas";
 import TabDiagnostico from "./tab-diagnostico";
 import TabEstadistica from "./tab-estadistica";
@@ -38,6 +42,8 @@ const TABS = [
   { id: "beneficiarios", label: "Beneficiarios", icon: Users },
   { id: "cronograma", label: "Cronograma", icon: CalendarRange },
   { id: "valorizaciones", label: "Valorización semanal", icon: FileSpreadsheet },
+  { id: "maestros", label: "Maestros y pagos", icon: HardHat },
+  { id: "materiales", label: "Materiales", icon: Package },
   { id: "fianzas", label: "Fianzas", icon: ShieldCheck },
   { id: "diagnostico", label: "Diagnóstico y acciones", icon: Wrench },
   { id: "estadistica", label: "Estadística y proyección", icon: BarChart3 },
@@ -116,6 +122,8 @@ function Dashboard() {
             {tab === "beneficiarios" && <TabBeneficiarios {...props} />}
             {tab === "cronograma" && <TabCronograma {...props} />}
             {tab === "valorizaciones" && <TabSemanal />}
+            {tab === "maestros" && <TabMaestros />}
+            {tab === "materiales" && <TabMateriales />}
             {tab === "fianzas" && <TabFianzas />}
             {tab === "diagnostico" && <TabDiagnostico {...props} />}
             {tab === "estadistica" && <TabEstadistica {...props} />}

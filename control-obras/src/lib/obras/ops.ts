@@ -5,7 +5,9 @@ import type {
   Beneficiario,
   EstadoPredio,
   ISODate,
+  MovimientoMaterial,
   ObraState,
+  Pago,
   Valorizacion,
 } from "@/types/obras";
 import {
@@ -228,7 +230,9 @@ export function importarBeneficiarios(
       if (!contrato) {
         contrato = {
           id: uid("c"),
-          subcontratista: `Subcontratista ${entidad.sigla} — por definir`,
+          subcontratista: `Maestro de obra ${entidad.sigla} — por definir`,
+          tipo: "maestro",
+          pagos: [],
           entidadId: entidad.id,
           beneficiarioIds: [],
           costoUnitario: next.contratos[0]?.costoUnitario ?? 8500,
@@ -262,8 +266,9 @@ export function nuevaValorizacion(
   const serie = valorizacionesDeContrato(contratoId, next.valorizaciones);
   const numero = serie.reduce((m, v) => Math.max(m, v.numero), 0) + 1;
   const avances: Valorizacion["avances"] = {};
+  // Precarga con el último avance del módulo en cualquier contrato.
   for (const bId of contrato.beneficiarioIds) {
-    avances[bId] = { ...avancesA(bId, serie, fechaCorte) };
+    avances[bId] = { ...avancesA(bId, next.valorizaciones, fechaCorte) };
   }
   const id = uid("v");
   next.valorizaciones.push({
@@ -358,18 +363,133 @@ export function reabrirSemana(
   });
 }
 
-export function marcarPagada(
+
+/* ------------------------------------------------------------------ */
+/* Maestros de obra y pagos                                            */
+/* ------------------------------------------------------------------ */
+
+export function nuevoMaestro(state: ObraState, entidadId: string): { state: ObraState; id: string } {
+  const next = structuredClone(state);
+  const id = uid("c");
+  const base = next.contratos.find((c) => c.entidadId === entidadId);
+  next.contratos.push({
+    id,
+    subcontratista: "Nuevo maestro de obra",
+    tipo: "maestro",
+    entidadId,
+    beneficiarioIds: [],
+    costoUnitario: base?.costoUnitario ?? 8500,
+    fechaInicio: base?.fechaInicio ?? next.config.fechaInicio,
+    plazoDias: base?.plazoDias ?? next.config.plazoTotalDias,
+    adicionales: [],
+    adelantos: [],
+    pagos: [],
+  });
+  return { state: next, id };
+}
+
+/**
+ * Asigna un módulo a otro maestro (de la misma entidad técnica). Lo ya
+ * valorizado queda en el contrato anterior; desde la próxima semana el
+ * módulo se valoriza con el nuevo maestro sin volver a pagar lo ejecutado.
+ */
+export function asignarModulo(state: ObraState, beneficiarioId: string, contratoId: string): ObraState {
+  const destino = state.contratos.find((c) => c.id === contratoId);
+  const b = state.beneficiarios.find((x) => x.id === beneficiarioId);
+  if (!destino || !b) throw new Error("Maestro o módulo no encontrado");
+  if (destino.entidadId !== b.entidadId) {
+    throw new Error("El módulo pertenece a otra entidad técnica.");
+  }
+  const abierta = state.valorizaciones.find(
+    (v) => v.estado === "borrador" && v.avances[beneficiarioId] && v.contratoId !== contratoId,
+  );
+  if (abierta) {
+    throw new Error(
+      `El módulo está en la semana abierta N° ${abierta.numero} de su maestro actual: regístrala o elimínala antes de reasignarlo.`,
+    );
+  }
+  const next = structuredClone(state);
+  for (const c of next.contratos) c.beneficiarioIds = c.beneficiarioIds.filter((x) => x !== beneficiarioId);
+  next.contratos.find((c) => c.id === contratoId)!.beneficiarioIds.push(beneficiarioId);
+  return next;
+}
+
+/**
+ * Registra un pago realizado. Si está asociado a una semana y con él se
+ * completa su neto, la semana pasa a "pagada".
+ */
+export function registrarPago(
   state: ObraState,
-  id: string,
-  fechaPago: ISODate,
+  contratoId: string,
+  pago: Omit<Pago, "id" | "registradoEn" | "registradoPor">,
   usuario?: string,
 ): ObraState {
-  return mutarValorizacion(state, id, (v) => {
-    if (v.estado === "borrador") throw new Error("Registra la semana antes de marcarla como pagada.");
-    v.estado = "pagada";
-    v.fechaPago = fechaPago;
-    v.bitacora = [...(v.bitacora ?? []), { en: new Date().toISOString(), accion: "pagada", por: usuario }];
+  if (!(pago.monto > 0)) throw new Error("El monto debe ser mayor que cero.");
+  const next = structuredClone(state);
+  const c = next.contratos.find((x) => x.id === contratoId);
+  if (!c) throw new Error("Maestro no encontrado");
+  const ahora = new Date().toISOString();
+  c.pagos = [...(c.pagos ?? []), { ...pago, id: uid("p"), registradoEn: ahora, registradoPor: usuario }];
+  if (pago.valorizacionId) {
+    const v = next.valorizaciones.find((x) => x.id === pago.valorizacionId);
+    if (!v || v.estado === "borrador") throw new Error("Solo se pagan semanas registradas.");
+    const calc = calcularValorizacion(v, next);
+    const pagado = c.pagos.filter((p) => p.valorizacionId === v.id).reduce((s, p) => s + p.monto, 0);
+    if (calc && pagado + 0.005 >= calc.netoPeriodo && v.estado !== "pagada") {
+      v.estado = "pagada";
+      v.fechaPago = pago.fecha;
+      v.bitacora = [...(v.bitacora ?? []), { en: ahora, accion: "pagada", por: usuario }];
+    }
+  }
+  return next;
+}
+
+export function anularPago(state: ObraState, contratoId: string, pagoId: string, usuario?: string): ObraState {
+  const next = structuredClone(state);
+  const c = next.contratos.find((x) => x.id === contratoId);
+  const pago = c?.pagos?.find((p) => p.id === pagoId);
+  if (!c || !pago) throw new Error("Pago no encontrado");
+  c.pagos = c.pagos!.filter((p) => p.id !== pagoId);
+  const v = pago.valorizacionId ? next.valorizaciones.find((x) => x.id === pago.valorizacionId) : null;
+  if (v && v.estado === "pagada") {
+    const calc = calcularValorizacion(v, next);
+    const pagado = c.pagos.filter((p) => p.valorizacionId === v.id).reduce((s, p) => s + p.monto, 0);
+    if (calc && pagado + 0.005 < calc.netoPeriodo) {
+      v.estado = "aprobada";
+      v.fechaPago = undefined;
+      v.bitacora = [
+        ...(v.bitacora ?? []),
+        { en: new Date().toISOString(), accion: "pago_anulado", por: usuario, nota: `${pago.monto.toFixed(2)} del ${pago.fecha}` },
+      ];
+    }
+  }
+  return next;
+}
+
+/* ------------------------------------------------------------------ */
+/* Movimientos de materiales                                           */
+/* ------------------------------------------------------------------ */
+
+export function registrarMovimiento(
+  state: ObraState,
+  mov: Omit<MovimientoMaterial, "id" | "registradoEn" | "registradoPor">,
+  usuario?: string,
+): { state: ObraState; id: string } {
+  const items = mov.items.filter((i) => i.materialId && i.cantidad > 0);
+  if (!items.length) throw new Error("Agrega al menos un material con cantidad.");
+  if ((mov.tipo === "entrega" || mov.tipo === "traslado") && !mov.destinoId) throw new Error("Elige el módulo de destino.");
+  if ((mov.tipo === "devolucion" || mov.tipo === "traslado") && !mov.origenId) throw new Error("Elige el módulo de origen.");
+  if (mov.tipo === "traslado" && mov.origenId === mov.destinoId) throw new Error("Origen y destino son el mismo módulo.");
+  const next = structuredClone(state);
+  const id = uid("m");
+  next.movimientosMaterial.push({
+    ...mov,
+    items,
+    id,
+    registradoEn: new Date().toISOString(),
+    registradoPor: usuario,
   });
+  return { state: next, id };
 }
 
 /* ------------------------------------------------------------------ */
@@ -461,6 +581,79 @@ export function generarDemo(state: ObraState, seed = 2026): ObraState {
       }
     });
   }
+  // Pagos: las semanas "pagadas" de la demo se pagan por transferencia.
+  for (const contrato of next.contratos) {
+    for (const v of next.valorizaciones.filter((x) => x.demo && x.contratoId === contrato.id && x.estado === "pagada")) {
+      const calc = calcularValorizacion(v, next);
+      if (!calc || calc.netoPeriodo <= 0) continue;
+      contrato.pagos = [
+        ...(contrato.pagos ?? []),
+        {
+          id: uid("demo-p"),
+          fecha: v.fechaPago ?? v.fechaCorte,
+          monto: calc.netoPeriodo,
+          medio: "transferencia",
+          referencia: `OP-${String(Math.floor(rnd() * 900000) + 100000)}`,
+          valorizacionId: v.id,
+          registradoEn: `${v.fechaPago ?? v.fechaCorte}T15:00:00.000Z`,
+          registradoPor: "demo",
+        },
+      ];
+    }
+  }
+
+  // Materiales: compras al almacén de cada ET y entregas por etapas a cada módulo.
+  // Kits por etapa (cantidades solo para la demostración, no son un metrado).
+  const kits: { dia: number; items: [string, number][] }[] = [
+    { dia: 0, items: [["agl-01", 45], ["agr-01", 6], ["agr-02", 4]] },
+    { dia: 7, items: [["ace-01", 14], ["ace-02", 20], ["ace-03", 30], ["ace-04", 8], ["alb-01", 3200], ["agl-01", 40], ["agr-03", 5], ["agr-05", 4]] },
+    { dia: 18, items: [["cob-01", 26], ["cob-02", 14], ["agl-01", 30], ["agr-04", 4], ["san-01", 4], ["ele-01", 100]] },
+    { dia: 32, items: [["aca-01", 9], ["aca-02", 4], ["san-06", 1], ["san-07", 1], ["ele-04", 1], ["car-01", 1]] },
+  ];
+
+  const existe = (id: string) => next.materiales.some((m) => m.id === id);
+  for (const e of next.entidades) {
+    const benefs = next.beneficiarios.filter((b) => b.entidadId === e.id);
+    if (!benefs.length) continue;
+    const total: Record<string, number> = {};
+    for (const k of kits) for (const [id, q] of k.items) if (q && existe(id)) total[id] = (total[id] ?? 0) + q * benefs.length;
+    next.movimientosMaterial.push({
+      id: uid("demo-m"),
+      tipo: "ingreso",
+      fecha: addDays(next.config.fechaInicio, -3),
+      entidadId: e.id,
+      items: Object.entries(total).map(([materialId, cantidad]) => ({ materialId, cantidad })),
+      documento: `IN-${e.id}-0001`,
+      proveedor: "Proveedor demo S.A.C.",
+      registradoEn: `${addDays(next.config.fechaInicio, -3)}T14:00:00.000Z`,
+      registradoPor: "demo",
+      demo: true,
+    });
+    let n = 0;
+    for (const b of benefs) {
+      const inicio = inicioBeneficiario(b, next.config);
+      const lento = b.id === benefs[benefs.length - 1].id;
+      for (const k of kits) {
+        const fecha = addDays(inicio, k.dia);
+        // El módulo rezagado todavía no recibe los últimos kits.
+        if (fecha > addDays(next.config.fechaInicio, 50) || (lento && k.dia >= 18)) continue;
+        n++;
+        next.movimientosMaterial.push({
+          id: uid("demo-m"),
+          tipo: "entrega",
+          fecha,
+          entidadId: e.id,
+          destinoId: b.id,
+          items: k.items.filter(([id, q]) => q && existe(id)).map(([materialId, cantidad]) => ({ materialId, cantidad })),
+          documento: `NE-${e.id}-${String(n).padStart(4, "0")}`,
+          recibidoPor: next.contratos.find((c) => c.beneficiarioIds.includes(b.id))?.subcontratista,
+          registradoEn: `${fecha}T13:00:00.000Z`,
+          registradoPor: "demo",
+          demo: true,
+        });
+      }
+    }
+  }
   return next;
 }
 
@@ -469,10 +662,12 @@ export function quitarDemo(state: ObraState): ObraState {
   next.valorizaciones = next.valorizaciones.filter((v) => !v.demo);
   for (const c of next.contratos) {
     c.adelantos = c.adelantos.filter((a) => !a.id.startsWith("demo-"));
+    c.pagos = (c.pagos ?? []).filter((p) => !p.id.startsWith("demo-"));
   }
+  next.movimientosMaterial = next.movimientosMaterial.filter((m) => !m.demo);
   return next;
 }
 
 export function tieneDemo(state: ObraState): boolean {
-  return state.valorizaciones.some((v) => v.demo);
+  return state.valorizaciones.some((v) => v.demo) || state.movimientosMaterial.some((m) => m.demo);
 }

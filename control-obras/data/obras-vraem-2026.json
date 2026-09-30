@@ -192,28 +192,342 @@
   "contratos": [
     {
       "id": "c-paher",
-      "subcontratista": "Subcontratista PAHER — por definir",
+      "subcontratista": "Maestro de obra PAHER — por definir",
       "entidadId": "PAHER",
       "beneficiarioIds": [],
       "costoUnitario": 8500,
       "fechaInicio": "2026-10-01",
       "plazoDias": 90,
       "adicionales": [],
-      "adelantos": []
+      "adelantos": [],
+      "tipo": "maestro",
+      "pagos": []
     },
     {
       "id": "c-jcvm",
-      "subcontratista": "Subcontratista JCVM — por definir",
+      "subcontratista": "Maestro de obra JCVM — por definir",
       "entidadId": "JCVM",
       "beneficiarioIds": [],
       "costoUnitario": 8500,
       "fechaInicio": "2026-10-01",
       "plazoDias": 90,
       "adicionales": [],
-      "adelantos": []
+      "adelantos": [],
+      "tipo": "maestro",
+      "pagos": []
     }
   ],
   "valorizaciones": [],
   "fianzas": [],
-  "acciones": []
+  "acciones": [],
+  "materiales": [
+    {
+      "id": "agl-01",
+      "codigo": "AGL-01",
+      "nombre": "Cemento Portland tipo I (42.5 kg)",
+      "unidad": "bolsa",
+      "categoria": "Aglomerantes"
+    },
+    {
+      "id": "agr-01",
+      "codigo": "AGR-01",
+      "nombre": "Hormigón",
+      "unidad": "m³",
+      "categoria": "Agregados",
+      "partidaId": "cimiento"
+    },
+    {
+      "id": "agr-02",
+      "codigo": "AGR-02",
+      "nombre": "Piedra grande / mediana",
+      "unidad": "m³",
+      "categoria": "Agregados",
+      "partidaId": "cimiento"
+    },
+    {
+      "id": "agr-03",
+      "codigo": "AGR-03",
+      "nombre": "Arena gruesa",
+      "unidad": "m³",
+      "categoria": "Agregados",
+      "partidaId": "muros"
+    },
+    {
+      "id": "agr-04",
+      "codigo": "AGR-04",
+      "nombre": "Arena fina",
+      "unidad": "m³",
+      "categoria": "Agregados",
+      "partidaId": "tarrajeo"
+    },
+    {
+      "id": "agr-05",
+      "codigo": "AGR-05",
+      "nombre": "Piedra chancada 1/2\"",
+      "unidad": "m³",
+      "categoria": "Agregados",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-01",
+      "codigo": "ACE-01",
+      "nombre": "Fierro corrugado 1/2\" (9 m)",
+      "unidad": "varilla",
+      "categoria": "Acero",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-02",
+      "codigo": "ACE-02",
+      "nombre": "Fierro corrugado 3/8\" (9 m)",
+      "unidad": "varilla",
+      "categoria": "Acero",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-03",
+      "codigo": "ACE-03",
+      "nombre": "Fierro liso 1/4\" (9 m)",
+      "unidad": "varilla",
+      "categoria": "Acero",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-04",
+      "codigo": "ACE-04",
+      "nombre": "Alambre negro N° 16",
+      "unidad": "kg",
+      "categoria": "Acero",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-05",
+      "codigo": "ACE-05",
+      "nombre": "Alambre negro N° 8",
+      "unidad": "kg",
+      "categoria": "Acero",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "ace-06",
+      "codigo": "ACE-06",
+      "nombre": "Clavos 2\"–3\"",
+      "unidad": "kg",
+      "categoria": "Acero"
+    },
+    {
+      "id": "alb-01",
+      "codigo": "ALB-01",
+      "nombre": "Ladrillo King Kong 18 huecos",
+      "unidad": "und",
+      "categoria": "Albañilería",
+      "partidaId": "muros"
+    },
+    {
+      "id": "mad-01",
+      "codigo": "MAD-01",
+      "nombre": "Madera para encofrado",
+      "unidad": "p²",
+      "categoria": "Madera",
+      "partidaId": "columnas"
+    },
+    {
+      "id": "cob-01",
+      "codigo": "COB-01",
+      "nombre": "Plancha de cobertura liviana",
+      "unidad": "plancha",
+      "categoria": "Cobertura",
+      "partidaId": "losa"
+    },
+    {
+      "id": "cob-02",
+      "codigo": "COB-02",
+      "nombre": "Correas / viguetas para cobertura",
+      "unidad": "und",
+      "categoria": "Cobertura",
+      "partidaId": "losa"
+    },
+    {
+      "id": "cob-03",
+      "codigo": "COB-03",
+      "nombre": "Tornillos autoperforantes con capuchón",
+      "unidad": "und",
+      "categoria": "Cobertura",
+      "partidaId": "losa"
+    },
+    {
+      "id": "san-01",
+      "codigo": "SAN-01",
+      "nombre": "Tubo PVC desagüe 4\"",
+      "unidad": "tubo",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "iiss"
+    },
+    {
+      "id": "san-02",
+      "codigo": "SAN-02",
+      "nombre": "Tubo PVC desagüe 2\"",
+      "unidad": "tubo",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "iiss"
+    },
+    {
+      "id": "san-03",
+      "codigo": "SAN-03",
+      "nombre": "Tubo PVC agua 1/2\"",
+      "unidad": "tubo",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "iiss"
+    },
+    {
+      "id": "san-04",
+      "codigo": "SAN-04",
+      "nombre": "Accesorios PVC (codos, tees, yees)",
+      "unidad": "glb",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "iiss"
+    },
+    {
+      "id": "san-05",
+      "codigo": "SAN-05",
+      "nombre": "Pegamento PVC",
+      "unidad": "frasco",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "iiss"
+    },
+    {
+      "id": "san-06",
+      "codigo": "SAN-06",
+      "nombre": "Inodoro con accesorios",
+      "unidad": "und",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "san-07",
+      "codigo": "SAN-07",
+      "nombre": "Lavatorio con grifería",
+      "unidad": "und",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "san-08",
+      "codigo": "SAN-08",
+      "nombre": "Ducha",
+      "unidad": "und",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "san-09",
+      "codigo": "SAN-09",
+      "nombre": "Lavadero",
+      "unidad": "und",
+      "categoria": "Inst. sanitarias",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "ele-01",
+      "codigo": "ELE-01",
+      "nombre": "Cable THW 2.5 mm²",
+      "unidad": "m",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "iiee"
+    },
+    {
+      "id": "ele-02",
+      "codigo": "ELE-02",
+      "nombre": "Cable THW 4 mm²",
+      "unidad": "m",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "iiee"
+    },
+    {
+      "id": "ele-03",
+      "codigo": "ELE-03",
+      "nombre": "Tubo PVC SAP 3/4\" eléctrico",
+      "unidad": "tubo",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "iiee"
+    },
+    {
+      "id": "ele-04",
+      "codigo": "ELE-04",
+      "nombre": "Tablero con interruptores termomagnéticos",
+      "unidad": "und",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "ele-05",
+      "codigo": "ELE-05",
+      "nombre": "Interruptores",
+      "unidad": "und",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "ele-06",
+      "codigo": "ELE-06",
+      "nombre": "Tomacorrientes",
+      "unidad": "und",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "ele-07",
+      "codigo": "ELE-07",
+      "nombre": "Sockets / focos",
+      "unidad": "und",
+      "categoria": "Inst. eléctricas",
+      "partidaId": "accesorios"
+    },
+    {
+      "id": "aca-01",
+      "codigo": "ACA-01",
+      "nombre": "Mayólica",
+      "unidad": "m²",
+      "categoria": "Acabados",
+      "partidaId": "mayolica"
+    },
+    {
+      "id": "aca-02",
+      "codigo": "ACA-02",
+      "nombre": "Pegamento para cerámico",
+      "unidad": "bolsa",
+      "categoria": "Acabados",
+      "partidaId": "mayolica"
+    },
+    {
+      "id": "aca-03",
+      "codigo": "ACA-03",
+      "nombre": "Fragua",
+      "unidad": "kg",
+      "categoria": "Acabados",
+      "partidaId": "mayolica"
+    },
+    {
+      "id": "car-01",
+      "codigo": "CAR-01",
+      "nombre": "Puerta principal",
+      "unidad": "und",
+      "categoria": "Carpintería"
+    },
+    {
+      "id": "car-02",
+      "codigo": "CAR-02",
+      "nombre": "Puertas interiores",
+      "unidad": "und",
+      "categoria": "Carpintería"
+    },
+    {
+      "id": "car-03",
+      "codigo": "CAR-03",
+      "nombre": "Ventanas",
+      "unidad": "und",
+      "categoria": "Carpintería"
+    }
+  ],
+  "movimientosMaterial": []
 }

@@ -112,6 +112,25 @@ export const obraStateSchema = z.object({
           amortizaciones: z.record(z.string(), monto),
         }),
       ),
+      tipo: z.enum(["maestro", "subcontratista"]).optional(),
+      dni: z.string().optional(),
+      telefono: z.string().optional(),
+      cuentaPago: z.string().optional(),
+      pagos: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            fecha,
+            monto: monto.positive("El monto del pago debe ser mayor que cero"),
+            medio: z.enum(["efectivo", "transferencia", "yape_plin", "cheque", "otro"]),
+            referencia: z.string().optional(),
+            valorizacionId: z.string().optional(),
+            observaciones: z.string().optional(),
+            registradoEn: z.string(),
+            registradoPor: z.string().optional(),
+          }),
+        )
+        .optional(),
     }),
   ),
   valorizaciones: z.array(
@@ -133,7 +152,7 @@ export const obraStateSchema = z.object({
         .array(
           z.object({
             en: z.string(),
-            accion: z.enum(["abierta", "registrada", "reabierta", "pagada"]),
+            accion: z.enum(["abierta", "registrada", "reabierta", "pagada", "pago_anulado"]),
             por: z.string().optional(),
             nota: z.string().optional(),
           }),
@@ -178,6 +197,36 @@ export const obraStateSchema = z.object({
       estado: z.enum(["plan", "hacer", "verificar", "actuar", "cerrada"]),
       beneficiarioIds: z.array(z.string()),
       resultado: z.string().optional(),
+    }),
+  ),
+  materiales: z.array(
+    z.object({
+      id: z.string().min(1),
+      codigo: z.string(),
+      nombre: z.string().min(1),
+      unidad: z.string(),
+      categoria: z.string(),
+      precioRef: monto.nonnegative().optional(),
+      requeridoPorModulo: z.number().nonnegative().optional(),
+      partidaId: z.string().optional(),
+    }),
+  ),
+  movimientosMaterial: z.array(
+    z.object({
+      id: z.string().min(1),
+      tipo: z.enum(["ingreso", "entrega", "devolucion", "traslado", "merma"]),
+      fecha,
+      entidadId: z.string(),
+      origenId: z.string().optional(),
+      destinoId: z.string().optional(),
+      items: z.array(z.object({ materialId: z.string(), cantidad: z.number().positive() })).min(1),
+      documento: z.string().optional(),
+      proveedor: z.string().optional(),
+      recibidoPor: z.string().optional(),
+      observaciones: z.string().optional(),
+      registradoEn: z.string(),
+      registradoPor: z.string().optional(),
+      demo: z.boolean().optional(),
     }),
   ),
 });

@@ -12,6 +12,7 @@ export async function descargarReporteExcel(r: Reporte, nombreArchivo: string): 
   const ExcelJS = (await import("exceljs")).default;
   const wb = new ExcelJS.Workbook();
   wb.creator = "Control de Obras";
+  wb.calcProperties.fullCalcOnLoad = true;
   wb.created = new Date();
   const ws = wb.addWorksheet(`VAL N° ${String(r.valorizacionN).padStart(2, "0")}`, {
     pageSetup: {
@@ -289,6 +290,102 @@ export async function descargarReporteExcel(r: Reporte, nombreArchivo: string): 
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArchivo;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/** Planilla semanal consolidada de pagos a maestros de obra (una fila por maestro). */
+export async function descargarPlanillaExcel(
+  datos: {
+    obra: string;
+    semanaN: number;
+    desde: string;
+    hasta: string;
+    filas: {
+      maestro: string;
+      dni?: string;
+      entidad: string;
+      modulos: number;
+      valorizado: number;
+      adicionales: number;
+      amortizacion: number;
+      descuentos: number;
+      neto: number;
+      pagado: number;
+      saldo: number;
+      pagos: string;
+    }[];
+  },
+  nombreArchivo: string,
+): Promise<void> {
+  const ExcelJS = (await import("exceljs")).default;
+  const wb = new ExcelJS.Workbook();
+  wb.calcProperties.fullCalcOnLoad = true;
+  const ws = wb.addWorksheet(`Planilla S${datos.semanaN}`, {
+    pageSetup: { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+  });
+  const cols = [
+    ["N°", 5], ["MAESTRO DE OBRA", 30], ["DNI", 11], ["E.T.", 8], ["MÓDULOS", 9],
+    ["VALORIZADO SEMANA", 14], ["ADICIONALES", 12], ["AMORT. ADELANTO", 13], ["OTROS DESC.", 12],
+    ["NETO A PAGAR", 14], ["PAGADO", 13], ["MEDIO / N° OPERACIÓN", 28], ["SALDO", 12], ["FIRMA / HUELLA", 26],
+  ] as const;
+  ws.columns = cols.map(([, w]) => ({ width: w }));
+  const n = cols.length;
+  ws.mergeCells(1, 1, 1, n);
+  ws.getCell(1, 1).value = "PLANILLA DE PAGOS SEMANALES — MAESTROS DE OBRA";
+  ws.getCell(1, 1).font = { bold: true, size: 14 };
+  ws.mergeCells(2, 1, 2, n);
+  ws.getCell(2, 1).value = `${datos.obra} · SEMANA N° ${datos.semanaN}: del ${fechaCorta(datos.desde)} al ${fechaCorta(datos.hasta)}`;
+  const h = 4;
+  cols.forEach(([t], i) => {
+    const c = ws.getCell(h, i + 1);
+    c.value = t;
+    c.font = { bold: true, size: 9 };
+    c.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEFEDE6" } };
+    c.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+  });
+  ws.getRow(h).height = 30;
+  datos.filas.forEach((f, i) => {
+    const r = h + 1 + i;
+    const vals = [i + 1, f.maestro, f.dni ?? "", f.entidad, f.modulos, f.valorizado, f.adicionales, f.amortizacion, f.descuentos, null, f.pagado, f.pagos, null, ""];
+    vals.forEach((v, k) => (ws.getCell(r, k + 1).value = v));
+    ws.getCell(r, 10).value = { formula: `F${r}+G${r}-H${r}-I${r}`, result: f.neto };
+    ws.getCell(r, 13).value = { formula: `J${r}-K${r}`, result: f.saldo };
+    for (const k of [6, 7, 8, 9, 10, 11, 13]) ws.getCell(r, k).numFmt = MONEDA;
+    ws.getRow(r).height = 30;
+    for (let k = 1; k <= n; k++) {
+      ws.getCell(r, k).border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+      ws.getCell(r, k).alignment = { vertical: "middle", wrapText: k === 12 };
+    }
+  });
+  const t = h + 1 + datos.filas.length;
+  ws.mergeCells(t, 1, t, 5);
+  ws.getCell(t, 1).value = "TOTAL";
+  ws.getCell(t, 1).alignment = { horizontal: "right" };
+  const claves = { 6: "valorizado", 7: "adicionales", 8: "amortizacion", 9: "descuentos", 10: "neto", 11: "pagado", 13: "saldo" } as const;
+  for (const k of [6, 7, 8, 9, 10, 11, 13] as const) {
+    const L = ws.getColumn(k).letter;
+    const cell = ws.getCell(t, k);
+    const total = datos.filas.reduce((sum, f) => sum + f[claves[k]], 0);
+    cell.value = { formula: `SUM(${L}${h + 1}:${L}${t - 1})`, result: Math.round(total * 100) / 100 };
+    cell.numFmt = MONEDA;
+  }
+  ws.getRow(t).font = { bold: true };
+  const firmas = t + 5;
+  ws.mergeCells(firmas, 2, firmas, 4);
+  ws.getCell(firmas, 2).value = "RESIDENTE DE OBRA";
+  ws.mergeCells(firmas, 9, firmas, 12);
+  ws.getCell(firmas, 9).value = "V°B° ENTIDAD TÉCNICA";
+  for (const c of [2, 9]) {
+    ws.getCell(firmas, c).alignment = { horizontal: "center" };
+    ws.getCell(firmas, c).border = { top: { style: "thin" } };
+  }
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = nombreArchivo;

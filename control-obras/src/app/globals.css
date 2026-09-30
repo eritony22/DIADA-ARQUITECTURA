@@ -75,6 +75,12 @@ body {
     box-shadow: none !important;
     padding: 0 !important;
   }
+  /* Notas de entrega y planilla: caben en A4 sin la reducción del cuadro ancho. */
+  .print-area.print-nota {
+    width: 100%;
+    max-width: none;
+    zoom: 1;
+  }
   .no-print {
     display: none !important;
   }

@@ -581,6 +581,26 @@ export function valorizacionesDeContrato(
   return valorizacionesOrdenadas(vals.filter((v) => v.contratoId === contratoId));
 }
 
+/**
+ * Avance del módulo en su valorización previa (de cualquier contrato): lo ya
+ * valorizado, que no se vuelve a pagar aunque el módulo cambie de maestro.
+ */
+export function avanceAnterior(
+  beneficiarioId: string,
+  v: Valorizacion,
+  vals: Valorizacion[],
+): Record<string, number> {
+  let prev: Record<string, number> = {};
+  for (const x of valorizacionesOrdenadas(vals)) {
+    if (x.id === v.id || !x.avances[beneficiarioId]) continue;
+    const antes =
+      x.fechaCorte < v.fechaCorte ||
+      (x.contratoId === v.contratoId && x.fechaCorte === v.fechaCorte && x.numero < v.numero);
+    if (antes) prev = x.avances[beneficiarioId];
+  }
+  return prev;
+}
+
 export function calcularValorizacion(
   v: Valorizacion,
   state: ObraState,
@@ -590,16 +610,24 @@ export function calcularValorizacion(
   const serie = valorizacionesDeContrato(contrato.id, state.valorizaciones);
   const idx = serie.findIndex((x) => x.id === v.id);
   const anterior = idx > 0 ? serie[idx - 1] : null;
-  const benefs = contrato.beneficiarioIds
+  // Semana abierta: los módulos actuales del contrato. Semana registrada: los
+  // módulos que tenía al valorizarse (así el reporte no cambia si después un
+  // módulo pasa a otro maestro).
+  const ids =
+    v.estado === "borrador"
+      ? contrato.beneficiarioIds
+      : [
+          ...contrato.beneficiarioIds.filter((id) => v.avances[id]),
+          ...Object.keys(v.avances).filter((id) => !contrato.beneficiarioIds.includes(id)),
+        ];
+  const benefs = ids
     .map((id) => state.beneficiarios.find((b) => b.id === id))
     .filter((b): b is Beneficiario => Boolean(b));
 
   const lineas = benefs.map<LineaValorizacion>((b) => {
     const avances = v.avances[b.id] ?? {};
     const acumulado = avanceModulo(avances, state.partidas);
-    const anteriorAv = anterior
-      ? avanceModulo(anterior.avances[b.id] ?? {}, state.partidas)
-      : 0;
+    const anteriorAv = avanceModulo(avanceAnterior(b.id, v, state.valorizaciones), state.partidas);
     const cu = contrato.costoUnitario;
     return {
       beneficiario: b,

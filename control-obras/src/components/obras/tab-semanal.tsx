@@ -14,6 +14,7 @@ import {
 import type { ISODate, Valorizacion } from "@/types/obras";
 import {
   amortizacionSugerida,
+  avanceAnterior,
   calcularValorizacion,
   clamp,
   corteDeSemana,
@@ -29,13 +30,15 @@ import {
   valorizacionesDeContrato,
   type CalculoValorizacion,
 } from "@/lib/obras/calc";
-import { abrirSemana, marcarPagada, reabrirSemana, registrarSemana, uid } from "@/lib/obras/ops";
+import { abrirSemana, anularPago, reabrirSemana, registrarPago, registrarSemana, uid } from "@/lib/obras/ops";
+import { MEDIO_PAGO_LABEL, pagadoDeValorizacion } from "@/lib/obras/pagos";
+import type { MedioPago } from "@/types/obras";
 import { cn } from "@/lib/cn";
 import { useObra } from "./obra-context";
 import { BarrasSimples } from "./charts";
 import { DatosContrato, Movimientos } from "./contrato";
 import ReportePago from "./reporte-pago";
-import { Button, Card, EmptyState, Field, StatusBadge, inputBase, inputClass } from "./ui";
+import { Button, Card, EmptyState, Field, StatusBadge, inputClass } from "./ui";
 
 const ESTADO: Record<Valorizacion["estado"], { label: string; status: "warning" | "good" | "neutral" }> = {
   borrador: { label: "Abierta (no oficial)", status: "warning" },
@@ -241,7 +244,6 @@ function EditorSemana({
 }) {
   const { obra, update, replace, usuario } = useObra();
   const [modo, setModo] = useState<"semana" | "acumulado">("semana");
-  const [fechaPago, setFechaPago] = useState(todayISO());
   const [error, setError] = useState<string | null>(null);
   const v = calc.valorizacion;
   const bloqueada = v.estado !== "borrador";
@@ -330,38 +332,25 @@ function EditorSemana({
             </>
           )}
           {v.estado === "aprobada" && (
-            <>
-              <input
-                type="date"
-                value={fechaPago}
-                onChange={(e) => setFechaPago(e.target.value)}
-                className={cn(inputBase, "w-40")}
-                aria-label="Fecha de pago"
-              />
-              <Button
-                variant="primary"
-                onClick={() => accion(() => replace(marcarPagada(obra, v.id, fechaPago, usuario ?? undefined)))}
-              >
-                <Wallet size={14} /> Marcar pagada
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  accion(() => {
-                    const motivo = prompt("Motivo de la reapertura (queda en la bitácora):");
-                    if (!motivo) return;
-                    replace(reabrirSemana(obra, v.id, usuario ?? undefined, motivo));
-                  })
-                }
-              >
-                <LockOpen size={14} /> Reabrir
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                accion(() => {
+                  const motivo = prompt("Motivo de la reapertura (queda en la bitácora):");
+                  if (!motivo) return;
+                  replace(reabrirSemana(obra, v.id, usuario ?? undefined, motivo));
+                })
+              }
+            >
+              <LockOpen size={14} /> Reabrir
+            </Button>
           )}
         </>
       }
     >
       {error && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
+      {bloqueada && <PagosSemana calc={calc} onError={setError} />}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex rounded-full border border-line bg-bone p-0.5 text-xs font-medium">
@@ -414,7 +403,7 @@ function EditorSemana({
           </thead>
           <tbody>
             {calc.lineas.map((l) => {
-              const ant = calc.anterior?.avances[l.beneficiario.id] ?? {};
+              const ant = avanceAnterior(l.beneficiario.id, v, obra.valorizaciones);
               return (
                 <tr key={l.beneficiario.id} className="border-b border-line/60">
                   <td className="sticky left-0 z-10 max-w-[200px] truncate bg-paper px-2 py-1 font-medium text-ink">
@@ -622,13 +611,17 @@ function HistorialPagos({
 }) {
   const { obra } = useObra();
   if (!calculos.length) return <p className="py-6 text-center text-sm text-stone">Aún no hay semanas valorizadas.</p>;
-  const pagado = calculos.filter((c) => c.valorizacion.estado === "pagada").reduce((s, c) => s + c.netoPeriodo, 0);
-  const porPagar = calculos.filter((c) => c.valorizacion.estado === "aprobada").reduce((s, c) => s + c.netoPeriodo, 0);
+  const contrato = calculos[0].contrato;
+  const registradas = calculos.filter((c) => c.valorizacion.estado !== "borrador");
+  const netoRegistrado = registradas.reduce((s, c) => s + c.netoPeriodo, 0);
+  const pagado = (contrato.pagos ?? []).reduce((s, p) => s + p.monto, 0);
+  const porPagar = netoRegistrado - pagado;
   return (
     <div>
       <div className="mb-3 flex flex-wrap gap-4 text-sm">
+        <span>Neto registrado: <b className="tabular-nums">{soles(netoRegistrado)}</b></span>
         <span>Pagado: <b className="tabular-nums">{soles(pagado)}</b></span>
-        <span>Registrado por pagar: <b className="tabular-nums">{soles(porPagar)}</b></span>
+        <span className={porPagar > 0.005 ? "text-red-700" : undefined}>Por pagar: <b className="tabular-nums">{soles(porPagar)}</b></span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">
@@ -641,6 +634,7 @@ function HistorialPagos({
               <th className="py-2 pr-2 text-right font-medium">Valorizado</th>
               <th className="py-2 pr-2 text-right font-medium">Descuentos</th>
               <th className="py-2 pr-2 text-right font-medium">Neto</th>
+              <th className="py-2 pr-2 text-right font-medium">Pagado</th>
               <th className="py-2 pr-2 font-medium">Registrado</th>
               <th className="py-2 font-medium" />
             </tr>
@@ -663,6 +657,9 @@ function HistorialPagos({
                   <td className="py-2 pr-2 text-right tabular-nums">{soles(c.brutoPeriodo)}</td>
                   <td className="py-2 pr-2 text-right tabular-nums">{soles(c.amortizacionPeriodo + c.descuentosPeriodo)}</td>
                   <td className="py-2 pr-2 text-right font-semibold tabular-nums">{soles(c.netoPeriodo)}</td>
+                  <td className="py-2 pr-2 text-right tabular-nums">
+                    {v.estado === "borrador" ? "—" : soles(pagadoDeValorizacion(c.contrato, v.id))}
+                  </td>
                   <td className="py-2 pr-2 text-xs text-stone">
                     {v.registradoEn ? fechaHora(v.registradoEn) : "—"}
                     {v.fechaPago && <div>pagado {fechaCorta(v.fechaPago)}</div>}
@@ -687,6 +684,99 @@ function Linea({ label, value, bold, muted }: { label: string; value: number; bo
     <div className={cn("flex justify-between py-0.5", bold && "font-semibold text-ink", muted && "text-stone")}>
       <span>{label}</span>
       <span className="tabular-nums">{soles(value)}</span>
+    </div>
+  );
+}
+
+function PagosSemana({ calc, onError }: { calc: CalculoValorizacion; onError: (e: string | null) => void }) {
+  const { obra, replace, usuario } = useObra();
+  const v = calc.valorizacion;
+  const contrato = calc.contrato;
+  const pagado = pagadoDeValorizacion(contrato, v.id);
+  const saldo = Math.round((calc.netoPeriodo - pagado) * 100) / 100;
+  const pagos = (contrato.pagos ?? []).filter((p) => p.valorizacionId === v.id);
+  const [monto, setMonto] = useState<number>(Math.max(0, saldo));
+  const [fecha, setFecha] = useState(todayISO());
+  const [medio, setMedio] = useState<MedioPago>("transferencia");
+  const [referencia, setReferencia] = useState("");
+
+  const pagar = () => {
+    onError(null);
+    try {
+      replace(
+        registrarPago(
+          obra,
+          contrato.id,
+          { fecha, monto, medio, referencia: referencia || undefined, valorizacionId: v.id },
+          usuario ?? undefined,
+        ),
+      );
+      setReferencia("");
+      setMonto(0);
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "No se pudo registrar el pago");
+    }
+  };
+
+  return (
+    <div className="mb-4 rounded-xl border border-line bg-bone/40 p-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+        <b className="font-display text-ink">Pagos de esta semana</b>
+        <span>Neto: <b className="tabular-nums">{soles(calc.netoPeriodo)}</b></span>
+        <span>Pagado: <b className="tabular-nums">{soles(pagado)}</b></span>
+        <span className={saldo > 0.005 ? "text-red-700" : "text-stone"}>
+          Saldo: <b className="tabular-nums">{soles(saldo)}</b>
+        </span>
+      </div>
+      {pagos.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs">
+          {pagos.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-center gap-x-3">
+              <span className="tabular-nums">{fechaCorta(p.fecha)}</span>
+              <b className="tabular-nums">{soles(p.monto)}</b>
+              <span>{MEDIO_PAGO_LABEL[p.medio]}{p.referencia ? ` · ${p.referencia}` : ""}</span>
+              <span className="text-stone">registrado {fechaHora(p.registradoEn)}{p.registradoPor ? ` por ${p.registradoPor}` : ""}</span>
+              <button
+                type="button"
+                className="text-red-700 underline"
+                onClick={() => {
+                  if (!confirm(`¿Anular el pago de ${soles(p.monto)} del ${fechaCorta(p.fecha)}?`)) return;
+                  try {
+                    replace(anularPago(obra, contrato.id, p.id, usuario ?? undefined));
+                  } catch (e) {
+                    onError(e instanceof Error ? e.message : "No se pudo anular");
+                  }
+                }}
+              >
+                anular
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {saldo > 0.005 && (
+        <div className="mt-3 grid grid-cols-2 items-end gap-2 md:grid-cols-[130px_150px_150px_1fr_auto]">
+          <Field label="Monto (S/)">
+            <input type="number" min={0} step={10} className={inputClass} value={monto} onChange={(e) => setMonto(Number(e.target.value) || 0)} />
+          </Field>
+          <Field label="Fecha de pago">
+            <input type="date" className={inputClass} value={fecha} onChange={(e) => e.target.value && setFecha(e.target.value)} />
+          </Field>
+          <Field label="Medio">
+            <select className={inputClass} value={medio} onChange={(e) => setMedio(e.target.value as MedioPago)}>
+              {Object.entries(MEDIO_PAGO_LABEL).map(([k, l]) => (
+                <option key={k} value={k}>{l}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="N° operación / recibo">
+            <input className={inputClass} value={referencia} onChange={(e) => setReferencia(e.target.value)} />
+          </Field>
+          <Button variant="primary" onClick={pagar} disabled={!(monto > 0)}>
+            <Wallet size={14} /> Registrar pago
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,8 @@ import type {
   ISODate,
   ObraState,
 } from "@/types/obras";
+import { materialesDeModulo, stockAlmacen, tieneMateriales } from "./materiales";
+import { semanasPorPagar } from "./pagos";
 import {
   addDays,
   avanceModulo,
@@ -597,6 +599,139 @@ export function diagnosticar(
           "Verificar el porcentaje de cobertura exigido en la convocatoria vigente.",
         ],
         beneficiarioIds: requeridos.map((b) => b.id),
+      });
+    }
+  }
+
+  /* 5b. Maestros de obra y pagos */
+  const sinMaestro = benefs.filter((b) => !state.contratos.some((c) => c.beneficiarioIds.includes(b.id)));
+  if (sinMaestro.length) {
+    alertas.push({
+      clave: "maestros:sin-asignar",
+      severidad: "warning",
+      categoria: "mano_obra",
+      ambito: "contrato",
+      titulo: `${sinMaestro.length} módulo(s) sin maestro de obra asignado`,
+      detalle: "No podrán valorizarse ni pagarse hasta asignarles un maestro.",
+      acciones: ["Asignar un maestro en 'Maestros y pagos → Asignación de módulos'."],
+      beneficiarioIds: sinMaestro.map((b) => b.id),
+    });
+  }
+  for (const c of state.contratos) {
+    for (const x of semanasPorPagar(c, state)) {
+      const v = x.calc.valorizacion;
+      if (x.saldo < -0.01) {
+        alertas.push({
+          clave: `sobrepago:${v.id}`,
+          severidad: "serious",
+          categoria: "medicion",
+          ambito: "contrato",
+          titulo: `Pago mayor al neto — ${c.subcontratista}, valorización N° ${v.numero}`,
+          detalle: `Neto ${soles(x.neto)}, pagado ${soles(x.pagado)} (exceso ${soles(-x.saldo)}).`,
+          acciones: [
+            "Verificar si hubo un pago duplicado y anularlo, o descontar el exceso en la próxima semana.",
+          ],
+          beneficiarioIds: [],
+        });
+      } else if (x.saldo > 0.01 && diffDays(fecha, v.fechaCorte) > 7) {
+        alertas.push({
+          clave: `pago-pendiente:${v.id}`,
+          severidad: diffDays(fecha, v.fechaCorte) > 14 ? "serious" : "warning",
+          categoria: "gestion",
+          ambito: "contrato",
+          titulo: `Pago pendiente — ${c.subcontratista}, semana al ${fechaCorta(v.fechaCorte)}`,
+          detalle: `Saldo ${soles(x.saldo)} de un neto de ${soles(x.neto)}, ${diffDays(fecha, v.fechaCorte)} días después del corte.`,
+          acciones: [
+            "Programar el pago y registrarlo con su N° de operación.",
+            "Los pagos atrasados a maestros suelen bajar el rendimiento de la cuadrilla la semana siguiente.",
+          ],
+          beneficiarioIds: [],
+        });
+      }
+    }
+  }
+
+  /* 5c. Materiales */
+  for (const e of state.entidades) {
+    const sinMat = indicadores.filter(
+      (i) =>
+        i.beneficiario.entidadId === e.id &&
+        i.ejecutado < 0.999 &&
+        diffDays(i.inicio, fecha) <= 7 &&
+        !tieneMateriales(state, i.beneficiario.id),
+    );
+    if (sinMat.length) {
+      const urgentes = sinMat.filter((i) => i.programado > 0.05);
+      alertas.push({
+        clave: `materiales:sin:${e.id}`,
+        severidad: urgentes.length ? "serious" : "warning",
+        categoria: "materiales",
+        ambito: "beneficiario",
+        titulo: `${sinMat.length} módulo(s) ${e.sigla} sin materiales entregados`,
+        detalle: urgentes.length
+          ? `${urgentes.length} ya deberían estar en ejecución: ${urgentes.map((i) => nombreCorto(i.beneficiario)).join(", ")}.`
+          : "Inician en los próximos 7 días.",
+        acciones: [
+          "Programar la entrega del kit inicial (cemento, agregados, fierro) antes del inicio del módulo.",
+          "Registrar cada entrega con su nota firmada por el maestro y el beneficiario.",
+        ],
+        beneficiarioIds: sinMat.map((i) => i.beneficiario.id),
+      });
+    }
+
+    const stock = stockAlmacen(state, e.id);
+    const negativos = state.materiales.filter((m) => (stock[m.id] ?? 0) < -1e-9);
+    if (negativos.length) {
+      alertas.push({
+        clave: `materiales:negativo:${e.id}`,
+        severidad: "warning",
+        categoria: "medicion",
+        ambito: "gestion",
+        titulo: `Stock negativo en almacén ${e.sigla}`,
+        detalle: `Se entregó más de lo ingresado: ${negativos.map((m) => m.nombre).join(", ")}.`,
+        acciones: [
+          "Registrar los ingresos (guías/facturas) que falten o corregir las entregas.",
+          "Hacer un inventario físico del almacén y registrar el ajuste.",
+        ],
+        beneficiarioIds: [],
+      });
+    }
+  }
+
+  const conRequerido = state.materiales.some((m) => m.requeridoPorModulo);
+  if (conRequerido) {
+    const faltantes: string[] = [];
+    const sobrantes: string[] = [];
+    for (const i of indicadores) {
+      const lineas = materialesDeModulo(state, real, i.beneficiario, fecha);
+      if (lineas.some((l) => l.enObraEstimado !== null && l.enObraEstimado < -0.01)) faltantes.push(i.beneficiario.id);
+      if (i.ejecutado >= 0.999 && lineas.some((l) => (l.enObraEstimado ?? 0) > 0.01)) sobrantes.push(i.beneficiario.id);
+    }
+    if (faltantes.length) {
+      alertas.push({
+        clave: "materiales:faltantes",
+        severidad: "warning",
+        categoria: "materiales",
+        ambito: "beneficiario",
+        titulo: `${faltantes.length} módulo(s) consumieron más material del entregado`,
+        detalle: "Según el avance registrado y el requerido por módulo, el consumo estimado supera lo entregado.",
+        acciones: [
+          "Verificar si hubo entregas sin registrar o traslados informales entre módulos.",
+          "Revisar el metrado del avance registrado (posible sobrevaloración).",
+        ],
+        beneficiarioIds: faltantes,
+      });
+    }
+    if (sobrantes.length) {
+      alertas.push({
+        clave: "materiales:sobrantes",
+        severidad: "info",
+        categoria: "materiales",
+        ambito: "beneficiario",
+        titulo: `${sobrantes.length} módulo(s) concluidos con material sobrante`,
+        detalle: "Lo entregado supera el requerido: registrar la devolución al almacén o el traslado a otro módulo.",
+        acciones: ["Registrar la devolución o traslado de los sobrantes con su nota."],
+        beneficiarioIds: sobrantes,
       });
     }
   }

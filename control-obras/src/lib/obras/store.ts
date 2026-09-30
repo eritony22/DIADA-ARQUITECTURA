@@ -32,8 +32,11 @@ interface ObraRow {
 function rowToState(row: ObraRow): ObraState {
   return {
     ...row.data,
-    // Datos guardados antes de existir el corte semanal: por defecto sábado.
+    // Datos guardados con versiones anteriores de la herramienta: completar
+    // los campos nuevos con sus valores por defecto.
     config: { ...row.data.config, diaCorte: row.data.config.diaCorte ?? 6 },
+    materiales: row.data.materiales ?? (seed as unknown as ObraState).materiales,
+    movimientosMaterial: row.data.movimientosMaterial ?? [],
     version: row.version,
     updatedAt: new Date(row.updated_at).toISOString(),
   };

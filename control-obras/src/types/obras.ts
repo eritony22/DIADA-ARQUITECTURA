@@ -87,9 +87,36 @@ export interface Adelanto extends MovimientoContrato {
  * Subcontrato de mano de obra/ejecución por módulo — el "cuadro de
  * valorización" se emite contra uno de estos.
  */
+export type MedioPago = "efectivo" | "transferencia" | "yape_plin" | "cheque" | "otro";
+
+/** Pago realmente efectuado a un maestro de obra / subcontratista. */
+export interface Pago {
+  id: string;
+  fecha: ISODate;
+  monto: number;
+  medio: MedioPago;
+  /** N° de operación, recibo o voucher. */
+  referencia?: string;
+  /** Valorización semanal que se paga (opcional: puede ser un pago a cuenta). */
+  valorizacionId?: string;
+  observaciones?: string;
+  registradoEn: string;
+  registradoPor?: string;
+}
+
+/**
+ * Contrato de mano de obra a destajo por módulo con un maestro de obra (o
+ * subcontratista). El "cuadro de valorización" semanal se emite contra él.
+ */
 export interface Contrato {
   id: string;
+  /** Nombre del maestro de obra / subcontratista. */
   subcontratista: string;
+  tipo?: "maestro" | "subcontratista";
+  dni?: string;
+  telefono?: string;
+  /** Banco y N° de cuenta / celular para Yape-Plin. */
+  cuentaPago?: string;
   entidadId: string;
   beneficiarioIds: string[];
   costoUnitario: number;
@@ -97,6 +124,56 @@ export interface Contrato {
   plazoDias: number;
   adicionales: MovimientoContrato[];
   adelantos: Adelanto[];
+  pagos?: Pago[];
+}
+
+/* ------------------------------------------------------------------ */
+/* Materiales                                                          */
+/* ------------------------------------------------------------------ */
+
+export interface Material {
+  id: string;
+  codigo: string;
+  nombre: string;
+  unidad: string;
+  categoria: string;
+  /** Precio unitario referencial (S/), para valorizar el stock. */
+  precioRef?: number;
+  /**
+   * Cantidad requerida por módulo según el metrado del expediente. Si se
+   * define, se estima el consumo con el avance y se detectan faltantes.
+   */
+  requeridoPorModulo?: number;
+  /** Partida que consume el material (para estimar el consumo con su avance). */
+  partidaId?: string;
+}
+
+export type TipoMovimientoMaterial =
+  | "ingreso" // compra/llegada al almacén de la entidad técnica
+  | "entrega" // almacén → módulo
+  | "devolucion" // módulo → almacén
+  | "traslado" // módulo → otro módulo
+  | "merma"; // pérdida, robo o daño (en almacén o en módulo)
+
+export interface MovimientoMaterial {
+  id: string;
+  tipo: TipoMovimientoMaterial;
+  fecha: ISODate;
+  entidadId: string;
+  /** Módulo de origen (devolución, traslado, merma en módulo). */
+  origenId?: string;
+  /** Módulo de destino (entrega, traslado). */
+  destinoId?: string;
+  items: { materialId: string; cantidad: number }[];
+  /** N° de guía de remisión, factura o nota de entrega. */
+  documento?: string;
+  proveedor?: string;
+  /** Quién recibe en obra (maestro, beneficiario) o quién entrega. */
+  recibidoPor?: string;
+  observaciones?: string;
+  registradoEn: string;
+  registradoPor?: string;
+  demo?: boolean;
 }
 
 /**
@@ -132,7 +209,7 @@ export interface Valorizacion {
 
 export interface EventoValorizacion {
   en: string; // ISO fecha-hora
-  accion: "abierta" | "registrada" | "reabierta" | "pagada";
+  accion: "abierta" | "registrada" | "reabierta" | "pagada" | "pago_anulado";
   por?: string;
   nota?: string;
 }
@@ -221,4 +298,6 @@ export interface ObraState {
   valorizaciones: Valorizacion[];
   fianzas: Fianza[];
   acciones: Accion[];
+  materiales: Material[];
+  movimientosMaterial: MovimientoMaterial[];
 }
