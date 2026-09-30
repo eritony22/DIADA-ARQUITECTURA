@@ -82,39 +82,10 @@ Cámbialas antes de desplegar a producción.
   dirección, Instagram), textos de la portada (hero), sección "Quiénes
   somos" (misión, visión, valores, equipo), servicios y estadísticas.
 
-- **Control de obras** (`/admin/obras`) — tablero tipo BI para proyectos de
-  módulos de vivienda del programa **Techo Propio – Construcción en Sitio
-  Propio** (primer prototipo: VRAEM 2026 — Pangoa, entidades técnicas PAHER y
-  JCVM). Ver la sección "Control de obras" abajo.
-
 Todo el contenido se guarda en **Postgres** y las imágenes subidas en
 **Vercel Blob**, y se refleja en el sitio público **al instante** (todas las
 páginas se renderizan por solicitud, no hay que reconstruir el sitio para ver
 un cambio).
-
-## Control de obras (`/admin/obras`)
-
-Herramienta de control y automatización para obras de módulos de vivienda.
-Todo se filtra por fecha de corte, entidad técnica, grupo y búsqueda.
-
-| Pestaña | Qué hace |
-| --- | --- |
-| Resumen | KPIs (avance, SPI, módulos, valorizado, término proyectado, BFH), curva S programado/ejecutado/proyección, avance por partida y por módulo, mapa por coordenadas, comparativo por entidad técnica. |
-| Beneficiarios | Padrón con etapa del proceso Techo Propio, condición del predio, semáforo, SPI y término proyectado; detalle por partida de cada módulo. |
-| Cronograma | Gantt por módulo (plazo, avance, extensión proyectada) y cronograma tipo del módulo por partida. |
-| Valorizaciones | Réplica del cuadro de valorización: avance acumulado por partida × peso × costo unitario, período vs. anterior, adicionales, amortización de adelantos (DES. N°), neto a pagar y exportación CSV. |
-| Fianzas | Registro de cartas fianza, vencimientos, línea de tiempo y cobertura requerida por entidad técnica. |
-| Diagnóstico y acciones | Alertas automáticas (atrasos, módulos sin iniciar, cuellos de botella, secuencia constructiva, predios, adelantos, valorizaciones pendientes, fianzas, plazo) con acciones sugeridas, Pareto 6M y tablero PDCA. |
-| Estadística y proyección | Descriptivos (media, desviación, CV, cuartiles), dispersión programado vs. ejecutado, distribución, regresión, flujo de valorización proyectado. |
-| Parámetros y datos | Importación de la lista oficial (.xlsx), datos de la obra y umbrales, pesos y cronograma de partidas, entidades, escenario demo y respaldo JSON. |
-
-- **Datos personales:** el repositorio es público, por eso `data/obras-vraem-2026.json`
-  solo trae la configuración (partidas, pesos, entidades, contratos). La lista
-  de beneficiarios se importa desde el panel y vive únicamente en la base de datos.
-- Las fórmulas están en `src/lib/obras/calc.ts` y las reglas de diagnóstico
-  en `src/lib/obras/diagnostico.ts`. Todo el estado de la obra se guarda en la
-  tabla `obras` (JSONB) con control de versión para evitar que dos sesiones
-  se pisen.
 
 ## Estructura del proyecto
 

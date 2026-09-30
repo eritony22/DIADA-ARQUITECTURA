@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #0b0b0d;
+  --color-ink-soft: #17161a;
+  --color-bone: #f4f3ef;
+  --color-bone-dim: #e9e7e0;
+  --color-paper: #fdfdfb;
+  --color-clay: #b5602e;
+  --color-clay-dark: #8a441f;
+  --color-clay-light: #d98a54;
+  --color-stone: #7c776e;
+  --color-stone-light: #cabfa9;
+  --color-line: rgba(11, 11, 13, 0.12);
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-bone: var(--color-bone);
+  --color-bone-dim: var(--color-bone-dim);
+  --color-paper: var(--color-paper);
+  --color-clay: var(--color-clay);
+  --color-clay-dark: var(--color-clay-dark);
+  --color-clay-light: var(--color-clay-light);
+  --color-stone: var(--color-stone);
+  --color-stone-light: var(--color-stone-light);
+  --color-line: var(--color-line);
+
+  --font-display: var(--font-space-grotesk), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-bone);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.kicker {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+/* Reporte de pago: al imprimir solo se ve la hoja del reporte. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  body {
+    background: white;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0 auto auto 0;
+    /* La tabla del cuadro es más ancha que un A4 horizontal: se dibuja a
+       ~1.35× el ancho de la página y se reduce con zoom para que entre. */
+    width: 135%;
+    zoom: 0.74;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

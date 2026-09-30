@@ -11,7 +11,6 @@ import {
   Settings,
   LogOut,
   ExternalLink,
-  HardHat,
   Menu,
   X,
 } from "lucide-react";
@@ -20,7 +19,6 @@ import { cn } from "@/lib/cn";
 
 const NAV = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
-  { href: "/admin/obras", label: "Control de obras", icon: HardHat },
   { href: "/admin/proyectos", label: "Proyectos", icon: Building2 },
   { href: "/admin/media", label: "Media", icon: Images },
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
@@ -147,16 +145,8 @@ export default function AdminShell({
         </div>
       )}
 
-      <main className="min-w-0 flex-1 px-5 pb-16 pt-24 lg:px-10 lg:pt-10">
-        <div
-          className={cn(
-            "mx-auto",
-            // El tablero de control de obras necesita más ancho que el resto del panel.
-            pathname?.startsWith("/admin/obras") ? "max-w-[1600px]" : "max-w-6xl",
-          )}
-        >
-          {children}
-        </div>
+      <main className="flex-1 px-5 pb-16 pt-24 lg:px-10 lg:pt-10">
+        <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>
   );
